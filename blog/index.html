@@ -1,46 +1,120 @@
----
-layout: default
----
+<!DOCTYPE HTML>
+<!--
+	Read Only by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+    
+	<head>
+		<title>Lu Blog</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/jquery.scrollzer.min.js"></script>
+		<script src="/js/jquery.scrolly.min.js"></script>
+		<script src="/js/skel.min.js"></script>
+		<script src="/js/skel-layers.min.js"></script>
+		<script src="/js/init.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="/css/skel.css" />
+			<link rel="stylesheet" href="/css/style.css" />
+			<link rel="stylesheet" href="/css/style-xlarge.css" />
+		</noscript>
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+	</head>
+		
+    <body>
+        <div id="wrapper">
+        <!-- Header -->
+    <section id="header" class="skel-layers-fixed">
+        <header>
+            <span class="image avatar"><img src="/images/avatar.jpg" alt="" /></span>
+            <h1 id="logo"><a href="/">LuZhenhuan</a></h1>
+            <p>fresh guys of machine learning<br />
+            if so hard to me</p>
+        </header>
+        <nav id="nav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/blog">Blog</a></li>
+            </ul>
+        </nav>
+        <footer>
+            <ul class="icons">
+                <li><a href="#" class="icon fa-wechat"><span class="label">Twitter</span></a></li>
+                <li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+                <li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
+                <li><a href="#" class="icon fa-github"><span class="label">Github</span></a></li>
+                <li><a href="#" class="icon fa-envelope"><span class="label">Email</span></a></li>
+            </ul>
+        </footer>
+    </section>
 
-<section id="one" >
+
+
+            <!-- Main -->
+            <div id="main">
+                <section id="one" >
     <div class="container">
-        {% for post in site.posts limit:1 %}
+        
             <article>
                 <header>
-                    <h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+                    <h2><a href="/2017/06/24/%E5%85%B3%E4%BA%8Et-sne-%E9%99%8D%E7%BB%B4-%E5%8F%AF%E8%A7%86%E5%8C%96.html">关于t Sne：降维、可视化</a></h2>
                 </header>
                 <section class="post-content">
-                    {{ post.excerpt }}
+                    <p><img src="/images/数据降维分支.png" /></p>
+
+
                 </section>
                 <section class="special">
                     <ul class="actions">
-                        <li><a href="{{ site.baseurl }}{{ post.url }}" class="button special">Read More</a></li>
+                        <li><a href="/2017/06/24/%E5%85%B3%E4%BA%8Et-sne-%E9%99%8D%E7%BB%B4-%E5%8F%AF%E8%A7%86%E5%8C%96.html" class="button special">Read More</a></li>
                     </ul>
                 </section>
             </article>
-        {% endfor %}
+        
     </div>
 </section>
 <section>
     <div class="container">
         <div class="features">
-        {% for post in site.posts offset:1 %}
+        
             <article>
                 <section class="excerpt">
                 <header>
-                    <h3><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h3>
+                    <h3><a href="/2015/01/30/Lorem.html">Lorem</a></h3>
                 </header>
                 
-                    {{ post.content | truncatewords: 30 }}
+                    <p><img src="/images/pic02.jpg" /> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi cursus fringilla dui. Donec laoreet maximus elit. Mauris ullamcorper condimentum lobortis. Donec maximus, mi vitae iaculis placerat, ligula...
                 </section>
                 <footer>
                     <ul class="actions">
-                        <li><a href="{{ site.baseurl }}{{ post.url }}" class="button">Read More</a></li>
+                        <li><a href="/2015/01/30/Lorem.html" class="button">Read More</a></li>
                     </ul>
                 </footer>
                 <div class="clear"></div>
             </article>
-        {% endfor %}
+        
         </div>
     </div>
 </section>
+
+            </div>
+            <!-- Footer -->
+    <section id="footer">
+        <div class="container">
+            <ul class="copyright">
+                <li>&copy; Untitled. All rights reserved.</li>
+                <li>Demo Images: <a href="https://unsplash.com/">Unsplash</a></li>
+                <li>Jekyll Template: <a href="http://cloudcannon.com">Cloud Cannon</a></li>
+            </ul>
+        </div>
+    </section>
+
+		</div>
+	</body>
+</html>
