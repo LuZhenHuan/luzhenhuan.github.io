@@ -1,14 +1,16 @@
-# 【转】【译】How to Handle Very Long Sequences with Long Short-Term Memory Recurrent Neural Networks
+---
+layout: post
+---
+
+LSTM在处理长时间序列上表现很好。
+如果像是时序预测和文本翻译一样每个输入都有一个输出，那么LSTM可以做的很好。但是当你有一个长的输入序列却只有一个或者一小段输出的时候，LSTM的性能就受到挑战。
+这就是我们经常说的序列标注和序列分类。
 
 by  Jason Brownlee
 
 原文地址 http://machinelearningmastery.com/handle-long-sequences-long-short-term-memory-recurrent-neural-networks/
 
-LSTM在处理长时间序列上表现很好。
 
-如果像是时序预测和文本翻译一样每个输入都有一个输出，那么LSTM可以做的很好。但是当你有一个长的输入序列却只有一个或者一小段输出的时候，LSTM的性能就受到挑战。
-
-这就是我们经常说的序列标注和序列分类。
 
 包括下面一些例子：
 
