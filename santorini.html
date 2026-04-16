@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>圣托里尼天神卡模拟器 · Santorini God Powers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f11;
+  --bg-surface: #16181c;
+  --bg-card: #1c1f24;
+  --bg-card-hover: #22262d;
+  --border: #2a2d35;
+  --border-hover: #3d4150;
+  --text: #e8eaed;
+  --text-secondary: #8b8fa3;
+  --text-muted: #5c6070;
+  --accent: #e8a44a;
+  --accent-subtle: rgba(232, 164, 74, 0.1);
+  --accent-glow: rgba(232, 164, 74, 0.25);
+  --simple: #4caf50;
+  --simple-bg: rgba(76, 175, 80, 0.1);
+  --simple-border: rgba(76, 175, 80, 0.25);
+  --advanced: #ff9800;
+  --advanced-bg: rgba(255, 152, 0, 0.08);
+  --advanced-border: rgba(255, 152, 0, 0.25);
+  --golden: #9c27b0;
+  --golden-bg: rgba(156, 39, 176, 0.08);
+  --golden-border: rgba(156, 39, 176, 0.25);
+  --hero: #2196f3;
+  --hero-bg: rgba(33, 150, 243, 0.08);
+  --hero-border: rgba(33, 150, 243, 0.25);
+  --lose: #f44336;
+  --setup-tag: #607d8b;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Noto Sans SC', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  top: -20%;
+  right: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* HEADER */
+.header { padding: 40px 0 16px; }
+.header__top { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.header__back {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+  padding: 6px 12px; border-radius: 50px; border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.header__back:hover { color: var(--accent); border-color: var(--accent); }
+.header__title {
+  font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700; letter-spacing: -0.02em; color: var(--text);
+}
+.header__title span { color: var(--accent); }
+.header__subtitle { color: var(--text-secondary); font-size: 0.9rem; font-weight: 300; }
+
+/* RANDOM PICK */
+.random-section {
+  margin: 24px 0 32px; padding: 28px 32px;
+  background: linear-gradient(135deg, var(--accent-subtle) 0%, var(--bg-surface) 100%);
+  border: 1px solid var(--accent-glow); border-radius: 16px;
+  text-align: center;
+}
+.random-section__title {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 600;
+  color: var(--text); margin-bottom: 4px;
+}
+.random-section__desc { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 16px; }
+.random-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 28px; background: var(--accent); color: #0e0f11;
+  border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 600;
+  font-family: var(--font-display); cursor: pointer;
+  transition: all var(--transition); letter-spacing: 0.02em;
+}
+.random-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px var(--accent-glow); }
+.random-btn:active { transform: translateY(0); }
+.random-result {
+  margin-top: 20px; display: none;
+  animation: fadeInUp 0.4s ease both;
+}
+.random-result.show { display: block; }
+.random-result__cards {
+  display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+}
+.random-god-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 24px; min-width: 200px;
+  text-align: center;
+}
+.random-god-card__icon { font-size: 2.2rem; margin-bottom: 8px; }
+.random-god-card__name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; }
+.random-god-card__title { color: var(--text-muted); font-size: 0.8rem; font-style: italic; }
+
+/* FILTERS */
+.filters { margin-bottom: 24px; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+.filter-label { color: var(--text-muted); font-size: 0.8rem; font-weight: 500; margin-right: 4px; min-width: 36px; }
+.filter-btn {
+  padding: 6px 14px; background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 50px; color: var(--text-secondary); font-size: 0.8rem;
+  font-family: var(--font-body); cursor: pointer; transition: all var(--transition);
+  white-space: nowrap;
+}
+.filter-btn:hover { border-color: var(--border-hover); color: var(--text); transform: translateY(-1px); }
+.filter-btn.active { background: var(--accent); border-color: var(--accent); color: #0e0f11; font-weight: 500; }
+.filter-btn.active-simple { background: var(--simple); border-color: var(--simple); color: #fff; font-weight: 500; }
+.filter-btn.active-advanced { background: var(--advanced); border-color: var(--advanced); color: #fff; font-weight: 500; }
+.filter-btn.active-golden { background: var(--golden); border-color: var(--golden); color: #fff; font-weight: 500; }
+.filter-btn.active-hero { background: var(--hero); border-color: var(--hero); color: #fff; font-weight: 500; }
+
+/* SEARCH */
+.search-wrap { max-width: 360px; position: relative; }
+.search-wrap svg {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); transition: color var(--transition); pointer-events: none;
+}
+.search-input {
+  width: 100%; padding: 9px 14px 9px 38px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 50px; color: var(--text); font-size: 0.85rem;
+  font-family: var(--font-body); outline: none; transition: all var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+
+/* GOD GRID */
+.god-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+  margin-bottom: 48px;
+}
+
+/* GOD CARD */
+.god-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  transition: all var(--transition); cursor: default;
+  animation: fadeInUp 0.4s ease both;
+}
+.god-card:hover { background: var(--bg-card-hover); border-color: var(--border-hover); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+.god-card__top { padding: 18px 20px 12px; display: flex; align-items: flex-start; gap: 14px; }
+.god-card__icon { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+.god-card__identity { flex: 1; min-width: 0; }
+.god-card__name { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
+.god-card__title { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: 2px; }
+
+.god-card__tags { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 20px 8px; }
+.tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.68rem; font-weight: 500; padding: 2px 8px;
+  border-radius: 50px; letter-spacing: 0.02em;
+}
+.tag-type-simple { background: var(--simple-bg); color: var(--simple); border: 1px solid var(--simple-border); }
+.tag-type-advanced { background: var(--advanced-bg); color: var(--advanced); border: 1px solid var(--advanced-border); }
+.tag-type-golden { background: var(--golden-bg); color: var(--golden); border: 1px solid var(--golden-border); }
+.tag-type-hero { background: var(--hero-bg); color: var(--hero); border: 1px solid var(--hero-border); }
+.tag-phase { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.08); }
+.tag-players { background: rgba(255,255,255,0.04); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.06); }
+.tag-banned { background: rgba(244,67,54,0.08); color: var(--lose); border: 1px solid rgba(244,67,54,0.2); }
+
+.god-card__ability {
+  padding: 10px 20px 16px;
+}
+.god-card__ability-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted); margin-bottom: 6px; font-weight: 600;
+}
+.god-card__ability-text {
+  font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary);
+}
+.god-card__ability-text strong,
+.god-card__ability-text b { color: var(--text); font-weight: 600; }
+
+.god-card__setup {
+  padding: 0 20px 8px;
+}
+.god-card__setup-text {
+  font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary);
+  padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+.god-card__banned {
+  padding: 0 20px 14px;
+}
+.god-card__banned-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--lose); font-weight: 600; margin-bottom: 4px;
+}
+.god-card__banned-text { font-size: 0.78rem; color: var(--text-muted); }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state__icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+.empty-state__text { font-size: 1rem; color: var(--text-secondary); }
+
+/* COUNTER */
+.counter { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 16px; }
+
+/* FOOTER */
+.footer {
+  text-align: center; padding: 32px 0 48px; color: var(--text-muted);
+  font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 24px;
+}
+.footer a { color: var(--accent); text-decoration: none; transition: opacity var(--transition); }
+.footer a:hover { opacity: 0.8; }
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .header { padding: 24px 0 12px; }
+  .god-grid { grid-template-columns: 1fr; }
+  .filter-row { gap: 6px; }
+  .filter-btn { padding: 5px 10px; font-size: 0.75rem; }
+  .random-result__cards { flex-direction: column; align-items: center; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .god-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <a href="index.html" class="header__back">← 返回导航</a>
+    <h1 class="header__title">圣托里尼<span>天神卡</span></h1>
+    <p class="header__subtitle">Santorini God Power Cards · 能力原文与速查</p>
+  </header>
+
+  <!-- Random Pick -->
+  <section class="random-section">
+    <div class="random-section__title">🎲 随机选神</div>
+    <div class="random-section__desc">随机抽取 2 位天神用于对局选神</div>
+    <button class="random-btn" id="randomBtn">🎲 随机抽神</button>
+    <div class="random-result" id="randomResult">
+      <div class="random-result__cards" id="randomCards"></div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-row">
+      <span class="filter-label">类型</span>
+      <button class="filter-btn active" data-filter="type" data-value="all">全部</button>
+      <button class="filter-btn" data-filter="type" data-value="simple">🌿 简单</button>
+      <button class="filter-btn" data-filter="type" data-value="advanced">⚡ 进阶</button>
+      <button class="filter-btn" data-filter="type" data-value="golden">🐑 金羊毛</button>
+      <button class="filter-btn" data-filter="type" data-value="hero">🪖 英雄</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">阶段</span>
+      <button class="filter-btn active" data-filter="phase" data-value="all">全部</button>
+      <button class="filter-btn" data-filter="phase" data-value="move">移动</button>
+      <button class="filter-btn" data-filter="phase" data-value="build">建造</button>
+      <button class="filter-btn" data-filter="phase" data-value="turn">回合</button>
+      <button class="filter-btn" data-filter="phase" data-value="opponent">对手回合</button>
+      <button class="filter-btn" data-filter="phase" data-value="win">胜利条件</button>
+      <button class="filter-btn" data-filter="phase" data-value="end">回合结束</button>
+    </div>
+    <div class="filter-row">
+      <div class="search-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索神名或能力…" autocomplete="off">
+      </div>
+    </div>
+  </div>
+
+  <div class="counter" id="counter"></div>
+
+  <div class="god-grid" id="godGrid"></div>
+
+  <footer class="footer">
+    基于 Santorini 第二版规则 · 天神能力原文来自 <a href="https://roxley.com/santorini" target="_blank" rel="noopener">Roxley Games</a> · 能力文本以官方卡牌为准
+  </footer>
+</div>
+
+<script>
+// ============================================
+// 圣托里尼天神卡完整数据
+// 能力文本基于官方第二版规则（BGA 修订版）
+// type: simple=简单, advanced=进阶, golden=金羊毛, hero=英雄
+// players: 支持的玩家数
+// phases: 能力触发阶段
+// banned: 禁止对局的神
+// ============================================
+
+const GODS = [
+  // ========== 简单神 Simple Gods ==========
+  {
+    name: 'Apollo', nameCN: '阿波罗', title: 'God of Music / 音乐之神',
+    icon: '🎵', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Move:</b> Your Worker may move into an opponent Worker\'s space by forcing their Worker to the space yours just vacated.',
+    abilityCN: '<b>你的移动：</b>你的工人可以移入对手工人的空间，将对手工人强制推到你刚离开的空间（位置互换）。',
+    phases: ['move'], banned: []
+  },
+  {
+    name: 'Artemis', nameCN: '阿尔忒弥斯', title: 'Goddess of the Hunt / 狩猎女神',
+    icon: '🏹', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Move:</b> Your Worker may move one additional time, but not back to its initial space.',
+    abilityCN: '<b>你的移动：</b>你的工人可以额外移动一次，但不能回到起始位置。',
+    phases: ['move'], banned: []
+  },
+  {
+    name: 'Athena', nameCN: '雅典娜', title: 'Goddess of Wisdom / 智慧女神',
+    icon: '🦉', type: 'simple', players: [2,3,4],
+    ability: '<b>Opponent\'s Turn:</b> If one of your Workers moved up on your last turn, opponent Workers cannot move up this turn.',
+    abilityCN: '<b>对手回合：</b>如果你的工人在上一回合向上移动，对手工人本回合不能向上移动。',
+    phases: ['opponent'], banned: []
+  },
+  {
+    name: 'Atlas', nameCN: '阿特拉斯', title: 'Titan Shouldering the Heavens / 肩擎苍穹的泰坦',
+    icon: '🌍', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Build:</b> Your Worker may build a dome at any level.',
+    abilityCN: '<b>你的建造：</b>你的工人可以在任何层级建造穹顶。',
+    phases: ['build'], banned: ['Gaea']
+  },
+  {
+    name: 'Demeter', nameCN: '得墨忒耳', title: 'Goddess of the Harvest / 丰收女神',
+    icon: '🌾', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Build:</b> Your Worker may build one additional time, but not on the same space.',
+    abilityCN: '<b>你的建造：</b>你的工人可以额外建造一次，但不能在同一位置。',
+    phases: ['build'], banned: []
+  },
+  {
+    name: 'Hephaestus', nameCN: '赫菲斯托斯', title: 'God of Blacksmiths / 锻造之神',
+    icon: '🔨', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Build:</b> Your Worker may build one additional block (not dome) on top of your first block.',
+    abilityCN: '<b>你的建造：</b>你的工人可以在第一次建造的方块上再叠建一个方块（不能建穹顶）。',
+    phases: ['build'], banned: []
+  },
+  {
+    name: 'Hermes', nameCN: '赫尔墨斯', title: 'God of Travel / 旅行之神',
+    icon: '👟', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Turn:</b> If your Workers do not move up or down, they may each move any number of times (even zero), and then either builds.',
+    abilityCN: '<b>你的回合：</b>如果你的工人没有上下移动，每个工人可以移动任意次数（包括0次），然后任选一个建造。',
+    phases: ['turn'], banned: ['Harpies']
+  },
+  {
+    name: 'Minotaur', nameCN: '弥诺陶洛斯', title: 'Bull-headed Monster / 牛头怪物',
+    icon: '🐂', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Move:</b> Your Worker may move into an opponent Worker\'s space, if their Worker can be forced one space straight backwards to an unoccupied space at any level.',
+    abilityCN: '<b>你的移动：</b>你的工人可以移入对手工人的空间，如果对手工人能被沿直线向后推到一个未占据的空间。',
+    phases: ['move'], banned: []
+  },
+  {
+    name: 'Pan', nameCN: '潘', title: 'God of the Wild / 荒野之神',
+    icon: '🐐', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Win Condition:</b> You also win if your Worker moves down two or more levels.',
+    abilityCN: '<b>胜利条件：</b>如果你的工人向下移动两层或以上，你也获胜。',
+    phases: ['win'], banned: ['Hades']
+  },
+  {
+    name: 'Prometheus', nameCN: '普罗米修斯', title: 'Titan Benefactor of Mankind / 造福人类的泰坦',
+    icon: '🔥', type: 'simple', players: [2,3,4], golden: true,
+    ability: '<b>Your Turn:</b> If your Worker does not move up, it may build both before and after moving.',
+    abilityCN: '<b>你的回合：</b>如果你的工人没有向上移动，可以在移动前后各建造一次。',
+    phases: ['turn'], banned: []
+  },
+
+  // ========== 进阶神 Advanced Gods ==========
+  {
+    name: 'Aphrodite', nameCN: '阿佛洛狄忒', title: 'Goddess of Love / 爱之女神',
+    icon: '💗', type: 'advanced', players: [2,4],
+    ability: '<b>Any Move:</b> If an opponent Worker starts its turn neighboring one of your Workers, its last move must be to a space neighboring one of your Workers.',
+    abilityCN: '<b>任意移动：</b>如果对手工人在回合开始时与你的工人相邻，其最后一次移动必须到达与你工人相邻的空间。',
+    phases: ['move'], banned: ['Nemesis', 'Urania']
+  },
+  {
+    name: 'Ares', nameCN: '阿瑞斯', title: 'God of War / 战争之神',
+    icon: '⚔️', type: 'advanced', players: [2,3,4],
+    ability: '<b>End of Your Turn:</b> You may remove an unoccupied block (not dome) neighboring your unmoved Worker. You also remove any Tokens on the block.',
+    abilityCN: '<b>回合结束时：</b>你可以移除你未移动的工人旁边的一个无人占据的方块（非穹顶），同时移除上面的标记。',
+    phases: ['end'], banned: []
+  },
+  {
+    name: 'Bia', nameCN: '比亚', title: 'Goddess of Violence / 暴力女神',
+    icon: '💀', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Setup:</b> Place your Workers first. Your workers must be placed in perimeter spaces.<br><br><b>Your Move:</b> If your Worker moves into a space and the next space in the same direction is occupied by an opponent Worker, the opponent\'s Worker is removed from the game.',
+    abilityCN: '<b>设置：</b>你先放置工人，必须放在边缘空间。<br><br><b>你的移动：</b>如果你的工人移入一个空间，且同方向下一个空间被对手工人占据，该对手工人被移出游戏。',
+    phases: ['move'], banned: ['Nemesis', 'Tartarus']
+  },
+  {
+    name: 'Charon', nameCN: '卡戎', title: 'Ferryman to the Underworld / 冥界渡神',
+    icon: '⛴️', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Your Move:</b> Before your Worker moves, you may force a neighboring opponent Worker to the space directly on the other side of your Worker, if that space is unoccupied.',
+    abilityCN: '<b>你的移动：</b>在你的工人移动之前，你可以将相邻的对手工人强制推到你工人正对面的空间（如果该空间未占据）。',
+    phases: ['move'], banned: ['Hecate']
+  },
+  {
+    name: 'Chaos', nameCN: '卡俄斯', title: 'Primordial Nothingness / 原始虚无',
+    icon: '🌀', type: 'advanced', players: [2,3,4],
+    ability: '<b>Setup:</b> Shuffle all unused Simple God Powers into a face-down deck in your play area. Draw the top God Power, and place it face-up beside the deck.<br><br><b>Any Time:</b> You have the Power of the face-up God Power. You must discard your current God Power and draw a new one after any turn in which at least one dome is built. If you run out of God Powers, shuffle them to create a new deck and draw the top one.',
+    abilityCN: '<b>设置：</b>将所有未使用的简单神力洗成面朝下的牌堆，抽出顶部的神力牌面朝上放置。<br><br><b>任意时刻：</b>你拥有面朝上神力牌的能力。任一回合中如有穹顶被建造，你必须弃掉当前神力并抽一张新的。',
+    phases: ['turn'], banned: ['Hecate', 'Nyx']
+  },
+  {
+    name: 'Chronus', nameCN: '克罗诺斯', title: 'God of Time / 时间之神',
+    icon: '⏰', type: 'advanced', players: [2],
+    ability: '<b>Win Condition:</b> You also win when there are at least five Complete Towers on the board.',
+    abilityCN: '<b>胜利条件：</b>当棋盘上有至少五座完整塔（3方块+穹顶）时，你也获胜。',
+    phases: ['win'], banned: ['Nyx']
+  },
+  {
+    name: 'Circe', nameCN: '喀耳刻', title: 'Divine Enchantress / 神圣女巫',
+    icon: '🧙‍♀️', type: 'advanced', players: [2],
+    ability: '<b>Start of Your Turn:</b> If an opponent\'s Workers do not neighbor each other, you alone have use of their power until your next turn.',
+    abilityCN: '<b>回合开始时：</b>如果对手的两个工人互不相邻，你独占使用对手的神力直到你的下一个回合。',
+    phases: ['turn'], banned: ['Achilles','Adonis','Atalanta','Bellerophon','Clio','Eros','Gaea','Graeae','Hecate','Heracles','Jason','Medea','Nyx','Odysseus','Polyphemus','Proteus','Tartarus','Theseus']
+  },
+  {
+    name: 'Dionysus', nameCN: '狄俄尼索斯', title: 'God of Wine / 酒神',
+    icon: '🍷', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Your Build:</b> Each time a Worker you control creates a Complete Tower, you may take an additional turn using an opponent Worker instead of your own. No player can win during these additional turns.',
+    abilityCN: '<b>你的建造：</b>每次你的工人建造完整塔时，你可以用对手的一个工人额外进行一个回合。在这些额外回合中没有人能获胜。',
+    phases: ['build'], banned: ['Hecate', 'Nyx']
+  },
+  {
+    name: 'Eros', nameCN: '厄洛斯', title: 'God of Desire / 欲望之神',
+    icon: '💘', type: 'advanced', players: [2,3,4],
+    ability: '<b>Setup:</b> Place your Workers anywhere along opposite edges of the board.<br><br><b>Win Condition:</b> You also win if one of your Workers moves to a space neighboring your other Worker and both are on the first level (or the same level in a 3-player game).',
+    abilityCN: '<b>设置：</b>将你的工人放置在棋盘对边的任意位置。<br><br><b>胜利条件：</b>如果你的一个工人移到与你的另一个工人相邻的位置，且两者都在第一层（3人游戏时为同一层），你也获胜。',
+    phases: ['win'], banned: ['Circe']
+  },
+  {
+    name: 'Hera', nameCN: '赫拉', title: 'Goddess of Marriage / 婚姻女神',
+    icon: '👑', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Opponent\'s Turn:</b> An opponent cannot win by moving into a perimeter space.',
+    abilityCN: '<b>对手回合：</b>对手不能通过移入边缘空间获胜。',
+    phases: ['opponent'], banned: []
+  },
+  {
+    name: 'Hestia', nameCN: '赫斯提亚', title: 'Goddess of Hearth and Home / 炉灶女神',
+    icon: '🏠', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Your Build:</b> Your Worker may build one additional time, but this cannot be on a perimeter space.',
+    abilityCN: '<b>你的建造：</b>你的工人可以额外建造一次，但不能在边缘空间。',
+    phases: ['build'], banned: []
+  },
+  {
+    name: 'Hypnus', nameCN: '修普诺斯', title: 'God of Sleep / 睡眠之神',
+    icon: '😴', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Start of Opponent\'s Turn:</b> If one of your opponent\'s Workers is higher than all of their others, it cannot move.',
+    abilityCN: '<b>对手回合开始时：</b>如果对手的一个工人比其所有其他工人都高，该工人不能移动。',
+    phases: ['opponent'], banned: ['Terpsichore']
+  },
+  {
+    name: 'Limus', nameCN: '利穆斯', title: 'Goddess of Famine / 饥荒女神',
+    icon: '🏜️', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Opponent\'s Turn:</b> Opponent Workers cannot build on spaces neighboring your Workers, unless building a dome.',
+    abilityCN: '<b>对手回合：</b>对手工人不能在你的工人相邻的位置建造，除非建造穹顶。',
+    phases: ['opponent'], banned: ['Terpsichore']
+  },
+  {
+    name: 'Medusa', nameCN: '美杜莎', title: 'Petrifying Gorgon / 石化蛇发女妖',
+    icon: '🐍', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>End of Your Turn:</b> If possible, your Workers build in lower neighboring spaces that are occupied by opponent Workers, removing the opponent Workers from the game.',
+    abilityCN: '<b>回合结束时：</b>如果可能，你的工人可以在被对手工人占据的较低相邻空间建造，将对手工人移出游戏。',
+    phases: ['end'], banned: ['Nemesis']
+  },
+  {
+    name: 'Morpheus', nameCN: '墨菲斯', title: 'God of Dreams / 梦之神',
+    icon: '💭', type: 'advanced', players: [2,3,4],
+    ability: '<b>Start of Your Turn:</b> Place a block or dome on your God Power card.<br><br><b>Your Build:</b> Your Worker cannot build as normal. Instead, your Worker may build any number of times (even zero) using blocks/domes collected on your God Power card. At any time, any player may exchange a block/dome on the God Power card for dome or a block of a different shape.',
+    abilityCN: '<b>回合开始时：</b>在你的神力牌上放置一个方块或穹顶。<br><br><b>你的建造：</b>你的工人不能正常建造。改为使用神力牌上收集的方块/穹顶建造任意次数（包括0次）。任何时候，任何玩家可以交换神力牌上的方块/穹顶。',
+    phases: ['build'], banned: []
+  },
+  {
+    name: 'Persephone', nameCN: '珀耳塞福涅', title: 'Goddess of Spring Growth / 春之女神',
+    icon: '🌸', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Opponent\'s Turn:</b> If possible, at least one Worker must move up this turn.',
+    abilityCN: '<b>对手回合：</b>如果可能，对手至少一个工人必须向上移动。',
+    phases: ['opponent'], banned: ['Atalanta', 'Eris']
+  },
+  {
+    name: 'Poseidon', nameCN: '波塞冬', title: 'God of the Sea / 海神',
+    icon: '🔱', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>End of Your Turn:</b> If your unmoved Worker is on the ground level, it may build up to three times.',
+    abilityCN: '<b>回合结束时：</b>如果你未移动的工人在地面层，它可以建造最多三次。',
+    phases: ['end'], banned: []
+  },
+  {
+    name: 'Selene', nameCN: '塞勒涅', title: 'Goddess of the Moon / 月之女神',
+    icon: '🌙', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Alternative Build:</b> Your female Worker may build a dome at any level regardless of which Worker moved.',
+    abilityCN: '<b>替代建造：</b>你的女性工人可以在任何层级建造穹顶，无论哪个工人移动了。',
+    phases: ['build'], banned: ['Gaea']
+  },
+  {
+    name: 'Triton', nameCN: '特里同', title: 'God of the Waves / 波涛之神',
+    icon: '🌊', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Your Move:</b> Each time your Worker moves into a perimeter space, it may immediately move again.',
+    abilityCN: '<b>你的移动：</b>每次你的工人移入边缘空间时，可以立即再移动一次。',
+    phases: ['move'], banned: ['Harpies']
+  },
+  {
+    name: 'Zeus', nameCN: '宙斯', title: 'God of the Sky / 天神之王',
+    icon: '⚡', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Your Build:</b> Your Worker may build a block under itself.',
+    abilityCN: '<b>你的建造：</b>你的工人可以在自己脚下建造一个方块。',
+    phases: ['build'], banned: []
+  },
+  {
+    name: 'Iris', nameCN: '伊里斯', title: 'Goddess of the Rainbow / 彩虹女神',
+    icon: '🌈', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Your Move:</b> If there is a Worker neighboring your Worker and the space directly on the other side of it is unoccupied, your Worker may move to that space regardless of its level.',
+    abilityCN: '<b>你的移动：</b>如果你的工人旁边有另一个工人，且该工人正对面的空间未被占据，你的工人可以移到那个空间，无视层级限制。',
+    phases: ['move'], banned: ['Hecate']
+  },
+  {
+    name: 'Maenads', nameCN: '迈那德斯', title: 'Raving Ones / 狂欢女',
+    icon: '🎭', type: 'advanced', players: [2,3,4],
+    ability: '<b>End of Your Turn:</b> If your Workers neighbor an opponent\'s Worker on opposite sides, that opponent loses the game.',
+    abilityCN: '<b>回合结束时：</b>如果你的两个工人从两侧包围了对手的工人，该对手输掉游戏。',
+    phases: ['end'], banned: ['Harpies']
+  },
+  {
+    name: 'Nyx', nameCN: '倪克斯', title: 'Goddess of Night / 夜之女神',
+    icon: '🌑', type: 'advanced', players: [2],
+    ability: '<b>Setup:</b> Before players choose powers, the first player selects a God Power card to be Nyx\'s Night Power.<br><br><b>End of All Turns:</b> If there are an odd number of Complete Towers in play, gain your Night Power and your opponent loses their God Power. If there are an even number, lose your Night Power and your opponent gains their God Power.',
+    abilityCN: '<b>设置：</b>在选择神力之前，先手玩家选择一张神力牌作为倪克斯的夜之力。<br><br><b>所有回合结束时：</b>如果场上完整塔数量为奇数，你获得夜之力，对手失去其神力。如果为偶数，你失去夜之力，对手获得其神力。',
+    phases: ['end'], banned: ['Chaos', 'Chronus', 'Circe', 'Dionysus', 'Hecate']
+  },
+  {
+    name: 'Tyche', nameCN: '堤喀', title: 'Goddess of Fortune / 幸运女神',
+    icon: '🎲', type: 'advanced', players: [2,3,4],
+    ability: '<b>Setup:</b> Shuffle a deck of 6 cards in your play area.<br><br><b>End of Your Turn:</b> Draw the top card of your deck. If it is 1-5, discard it. If it is 6, reshuffle your deck and you may take an additional turn. On that additional turn, do not draw the top card from your deck.',
+    abilityCN: '<b>设置：</b>洗一组6张的牌堆放在你的区域。<br><br><b>回合结束时：</b>抽牌堆顶牌。如果是1-5，弃掉。如果是6，重新洗牌并可以额外进行一个回合。额外回合不抽牌。',
+    phases: ['end'], banned: []
+  },
+  {
+    name: 'Proteus', nameCN: '普罗透斯', title: 'Shapeshifting Sea God / 变形海神',
+    icon: '🐙', type: 'advanced', players: [2,3],
+    ability: '<b>Setup:</b> When placing your Workers, place 3 of your color.<br><br><b>Your Move:</b> After your Worker moves, if possible, force one of your other Workers into the space just vacated.',
+    abilityCN: '<b>设置：</b>放置工人时，放置3个你的颜色。<br><br><b>你的移动：</b>你的工人移动后，如果可能，将你的另一个工人强制推入刚离开的空间。',
+    phases: ['move'], banned: ['Circe', 'Hecate']
+  },
+  {
+    name: 'Hippolyta', nameCN: '希波吕忒', title: 'Queen of the Amazons / 亚马逊女王',
+    icon: '🛡️', type: 'advanced', players: [2,3,4], golden: true,
+    ability: '<b>Any Time:</b> All Workers except your female Worker may only move diagonally.',
+    abilityCN: '<b>任意时刻：</b>除你的女性工人外，所有工人只能沿对角线移动。',
+    phases: ['move'], banned: []
+  },
+  {
+    name: 'Hydra', nameCN: '海德拉', title: 'Many-Headed Monster / 九头蛇怪',
+    icon: '🐉', type: 'advanced', players: [2,3],
+    ability: '<b>End of Your Turn:</b> If none of your Workers neighbor each other, gain a new Worker and place it in one of the lowest unoccupied spaces next to the Worker you moved. Otherwise, remove one of your Workers from play.',
+    abilityCN: '<b>回合结束时：</b>如果你的工人互不相邻，获得一个新工人放在你移动工人旁的最低未占据空间。否则从游戏中移除你一个工人。',
+    phases: ['end'], banned: []
+  },
+
+  // ========== 金羊毛神 Golden Fleece Gods ==========
+  {
+    name: 'Aeolus', nameCN: '埃俄罗斯', title: 'God of the Winds / 风神',
+    icon: '💨', type: 'golden', players: [2,3,4],
+    ability: '<b>Setup:</b> Place the Wind Token on your God Power card.<br><br><b>End of Your Turn:</b> If the Wind Token is on your God Power card, you may place it beside the board and orient it to indicate the direction of the Wind. Otherwise, you may return the Wind Token to your God Power card.<br><br><b>Any Move:</b> If the Wind Token is not on your God Power card, Workers cannot move directly into the Wind.',
+    abilityCN: '<b>设置：</b>将风向标记放在你的神力牌上。<br><br><b>回合结束时：</b>如果风向标记在牌上，可以放在棋盘旁并指向风向。否则可以收回牌上。<br><br><b>任意移动：</b>如果风向标记不在牌上，工人不能逆风方向移动。',
+    phases: ['move', 'end'], banned: []
+  },
+  {
+    name: 'Charybdis', nameCN: '卡律布狄斯', title: 'Whirlpool Monster / 大漩涡怪物',
+    icon: '🌊', type: 'golden', players: [2,3,4],
+    ability: '<b>Setup:</b> Place 2 Whirlpool Tokens on your God Power card.<br><br><b>End of Your Turn:</b> You may place a Whirlpool Token from your God Power card on any unoccupied space on the board.<br><br><b>Any Time:</b> If a Worker moves onto a Whirlpool and the other Whirlpool is on the board in an unoccupied space, it is forced to the other Whirlpool\'s space. Workers cannot win by moving to the first Whirlpool but can win as if they had moved to the second space.',
+    abilityCN: '<b>设置：</b>在神力牌上放置2个漩涡标记。<br><br><b>回合结束时：</b>可以将一个漩涡标记放在棋盘上任何未占据空间。<br><br><b>任意时刻：</b>如果工人移到漩涡上且另一个漩涡在未占据空间，工人被传送到另一个漩涡。移到第一个漩涡不能获胜，但传送到第二个空间可以正常获胜。',
+    phases: ['end', 'move'], banned: ['Hecate']
+  },
+  {
+    name: 'Clio', nameCN: '克丽俄', title: 'Muse of History / 历史缪斯',
+    icon: '📜', type: 'golden', players: [2,3],
+    ability: '<b>Your Build:</b> Place a Coin Token on each of the first 3 blocks your Workers build.<br><br><b>Opponent\'s Turn:</b> Opponents treat spaces containing your Coin Tokens as if they contain only a dome.',
+    abilityCN: '<b>你的建造：</b>在你的工人建造的前3个方块上放置硬币标记。<br><br><b>对手回合：</b>对手将含有你硬币标记的空间视为仅含穹顶。',
+    phases: ['build', 'opponent'], banned: ['Circe', 'Nemesis']
+  },
+  {
+    name: 'Europa & Talus', nameCN: '欧罗巴与塔罗斯', title: 'Queen & Guardian Automaton / 女王与守卫自动机',
+    icon: '🏰', type: 'golden', players: [2,3,4],
+    ability: '<b>Setup:</b> Place the Talus Token on your God Power card.<br><br><b>End of Your Turn:</b> You may relocate your Talus Token to an unoccupied space neighboring the Worker that moved.<br><br><b>Any Time:</b> All players treat the space containing the Talus Token as if it contains only a dome.',
+    abilityCN: '<b>设置：</b>将塔罗斯标记放在你的神力牌上。<br><br><b>回合结束时：</b>可以将塔罗斯标记移到移动工人相邻的未占据空间。<br><br><b>任意时刻：</b>所有玩家将塔罗斯标记所在空间视为仅含穹顶。',
+    phases: ['end'], banned: []
+  },
+  {
+    name: 'Gaea', nameCN: '盖亚', title: 'Goddess of the Earth / 地母神',
+    icon: '🌿', type: 'golden', players: [2,3],
+    ability: '<b>Setup:</b> Place 2 extra Workers of your color on your God Power card.<br><br><b>Any Build:</b> When a Worker builds a dome, Gaea may immediately place a Worker from her God Power card onto a ground-level space neighboring the dome.',
+    abilityCN: '<b>设置：</b>在你的神力牌上放置2个额外工人。<br><br><b>任意建造：</b>当工人建造穹顶时，盖亚可以立即从神力牌上放置一个工人到穹顶旁的地面层空间。',
+    phases: ['build'], banned: ['Atlas', 'Circe', 'Nemesis', 'Selene']
+  },
+  {
+    name: 'Graeae', nameCN: '格赖埃', title: 'The Gray Hags / 灰色老妇',
+    icon: '👁️', type: 'golden', players: [2,3],
+    ability: '<b>Setup:</b> When placing your Workers, place 3 of your color.<br><br><b>Your Build:</b> Build with either Worker that did not move.',
+    abilityCN: '<b>设置：</b>放置工人时，放置3个你的颜色。<br><br><b>你的建造：</b>用未移动的任何一个工人建造。',
+    phases: ['build'], banned: ['Circe', 'Nemesis']
+  },
+  {
+    name: 'Hades', nameCN: '哈迪斯', title: 'God of the Underworld / 冥界之神',
+    icon: '💀', type: 'golden', players: [2,3,4],
+    ability: '<b>Opponent\'s Turn:</b> Opponent Workers cannot move down.',
+    abilityCN: '<b>对手回合：</b>对手工人不能向下移动。',
+    phases: ['opponent'], banned: ['Asteria', 'Pan']
+  },
+  {
+    name: 'Harpies', nameCN: '哈耳庇厄', title: 'Winged Menaces / 有翼女妖',
+    icon: '🦅', type: 'golden', players: [2,3,4],
+    ability: '<b>Opponent\'s Turn:</b> Each time an opponent\'s Worker moves, it is forced space by space in the same direction until the next space is at a higher level or it is obstructed.',
+    abilityCN: '<b>对手回合：</b>每次对手工人移动后，沿相同方向被强制推动，直到下一个空间层级更高或被阻挡。',
+    phases: ['opponent'], banned: ['Hermes', 'Maenads', 'Triton']
+  },
+  {
+    name: 'Hecate', nameCN: '赫卡忒', title: 'Goddess of Magic / 魔法女神',
+    icon: '🔮', type: 'golden', players: [2],
+    ability: '<b>Setup:</b> Secretly place your Workers last. Your Workers are invisible to other players.<br><br><b>Your Turn:</b> Move a Worker Token on the Map as if it were on the game board. Build on the game board, as normal.<br><br><b>Any Time:</b> If an opponent attempts an action that would not be legal due to the presence of your secret Workers, their action is cancelled and they lose the rest of their turn.',
+    abilityCN: '<b>设置：</b>最后秘密放置你的工人，你的工人对对手不可见。<br><br><b>你的回合：</b>在地图上移动工人标记模拟棋盘上的移动，正常在棋盘上建造。<br><br><b>任意时刻：</b>如果对手的行动因你的秘密工人而不合法，行动取消且对手失去本回合剩余行动。',
+    phases: ['turn'], banned: ['Adonis','Chaos','Charon','Charybdis','Circe','Dionysus','Eris','Iris','Medea','Nemesis','Nyx','Odysseus','Proteus','Scylla','Siren','Tartarus','Theseus']
+  },
+  {
+    name: 'Terpsichore', nameCN: '忒耳西科瑞', title: 'Muse of Dancing / 舞蹈缪斯',
+    icon: '💃', type: 'golden', players: [2,3,4],
+    ability: '<b>Your Turn:</b> All of your Workers must move, and then all must build.',
+    abilityCN: '<b>你的回合：</b>你的所有工人都必须移动，然后所有工人必须建造。',
+    phases: ['turn'], banned: ['Hypnus', 'Limus', 'Nemesis', 'Tartarus']
+  },
+  {
+    name: 'Urania', nameCN: '乌拉尼亚', title: 'Muse of Astronomy / 天文缪斯',
+    icon: '🌌', type: 'golden', players: [2,3,4],
+    ability: '<b>Your Turn:</b> When your Worker moves or builds, treat opposite edges and corners as if they are adjacent so that every space has 8 neighbors.',
+    abilityCN: '<b>你的回合：</b>当你的工人移动或建造时，将棋盘对边和对角视为相邻，使每个空间都有8个邻居（环绕棋盘）。',
+    phases: ['turn'], banned: ['Aphrodite']
+  },
+  {
+    name: 'Siren', nameCN: '塞壬', title: 'Alluring Sea Nymph / 诱惑海妖',
+    icon: '🎵', type: 'golden', players: [2,3,4],
+    ability: '<b>Setup:</b> Place the Arrow Token beside the board and orient it to indicate the direction of the Siren\'s Song.<br><br><b>Alternative Turn:</b> Force one or more opponent Workers one space in the direction of the Siren\'s Song to unoccupied spaces at any level. Then build with any of your Workers.',
+    abilityCN: '<b>设置：</b>在棋盘旁放置箭头标记并指向塞壬之歌的方向。<br><br><b>替代回合：</b>沿塞壬之歌方向将一个或多个对手工人推到未占据的空间，然后用你的任一工人建造。',
+    phases: ['turn'], banned: ['Hecate']
+  },
+  {
+    name: 'Tartarus', nameCN: '塔耳塔洛斯', title: 'God of the Abyss / 深渊之神',
+    icon: '🕳️', type: 'golden', players: [2],
+    ability: '<b>Setup:</b> Place your Workers first. After all players\' Workers are placed, secretly place the Abyss Token on an unoccupied space. This space is the Abyss.<br><br><b>Lose Condition:</b> If any player\'s Worker enters the Abyss, they immediately lose. Workers cannot win by entering the Abyss.',
+    abilityCN: '<b>设置：</b>你先放置工人。所有玩家放完后，秘密在未占据空间放置深渊标记。<br><br><b>失败条件：</b>任何玩家的工人进入深渊则立即失败。工人不能通过进入深渊获胜。',
+    phases: ['win'], banned: ['Bia', 'Circe', 'Eris', 'Hecate', 'Terpsichore']
+  },
+  {
+    name: 'Nemesis', nameCN: '涅墨西斯', title: 'Goddess of Retribution / 报应女神',
+    icon: '⚖️', type: 'golden', players: [2,3,4],
+    ability: '<b>End of Your Turn:</b> If none of an opponent\'s Workers neighbor yours, you may force both of your Workers to spaces occupied by two of an opponent\'s Workers, and vice versa.',
+    abilityCN: '<b>回合结束时：</b>如果对手工人都不与你的工人相邻，你可以将你的两个工人与对手的两个工人互换位置。',
+    phases: ['end'], banned: ['Aphrodite','Bia','Clio','Gaea','Graeae','Hecate','Medusa','Terpsichore','Theseus']
+  },
+  {
+    name: 'Moerae', nameCN: '摩伊赖', title: 'Goddesses of Fate / 命运三女神',
+    icon: '🧵', type: 'golden', players: [2],
+    ability: '<b>Setup:</b> Take the Map, Shield, and Fate Token. Behind your Shield, secretly select a 2×2 square of Fate spaces by placing your Fate Token on the Map. When placing your Workers, place 3 of your color.<br><br><b>Win Condition:</b> If an opponent Worker attempts to win by moving into one of your Fate spaces, you win instead.',
+    abilityCN: '<b>设置：</b>取地图、挡板和命运标记。在挡板后秘密选择2×2的命运空间。放置工人时放3个。<br><br><b>胜利条件：</b>如果对手工人试图通过移入你的命运空间获胜，你取而代之获胜。',
+    phases: ['win'], banned: ['Hecate', 'Nemesis']
+  },
+  {
+    name: 'Asteria', nameCN: '阿斯忒瑞亚', title: 'Goddess of Falling Stars / 流星女神',
+    icon: '☄️', type: 'golden', players: [2,3,4],
+    ability: '<b>End of Your Turn:</b> If one of your Workers moved down this turn, you may build a dome in any unoccupied space.',
+    abilityCN: '<b>回合结束时：</b>如果你的工人本回合向下移动了，你可以在任何未占据空间建造一个穹顶。',
+    phases: ['end'], banned: ['Hades']
+  },
+  {
+    name: 'Castor & Pollux', nameCN: '卡斯托耳与波吕丢刻斯', title: 'Divine & Mortal Twins / 神与凡人双子',
+    icon: '♊', type: 'golden', players: [2,3,4],
+    ability: '<b>Alternative Turn:</b> Move with all of your Workers. Do not build.<br><br><b>Alternative Turn:</b> Do not move. Build with all of your Workers.',
+    abilityCN: '<b>替代回合：</b>用所有工人移动，不建造。<br><br><b>替代回合：</b>不移动，用所有工人建造。',
+    phases: ['turn'], banned: []
+  },
+  {
+    name: 'Eris', nameCN: '厄里斯', title: 'Goddess of Discord / 不和女神',
+    icon: '🍎', type: 'golden', players: [2,4],
+    ability: '<b>Alternative Turn:</b> Move and build with an opponent Worker that was not the one your opponent most recently moved. No player can win during this alternative turn.',
+    abilityCN: '<b>替代回合：</b>用对手最近未移动的工人移动和建造。此替代回合中没有人能获胜。',
+    phases: ['turn'], banned: ['Hecate', 'Persephone', 'Tartarus']
+  },
+  {
+    name: 'Pegasus', nameCN: '珀伽索斯', title: 'Winged Horse / 翼马',
+    icon: '🪽', type: 'golden', players: [2,3,4],
+    ability: '<b>Your Move:</b> Your Worker may move up more than one level, but cannot win the game by doing so.',
+    abilityCN: '<b>你的移动：</b>你的工人可以向上移动超过一层，但不能以此方式获胜。',
+    phases: ['move'], banned: []
+  },
+  {
+    name: 'Scylla', nameCN: '斯库拉', title: 'Menacing Sea Monster / 危险海怪',
+    icon: '🦈', type: 'golden', players: [2,4],
+    ability: '<b>Your Move:</b> If your Worker moves from a space that neighbors an opponent\'s Worker, you may force their Worker into the space yours just vacated.',
+    abilityCN: '<b>你的移动：</b>如果你的工人从与对手工人相邻的空间移出，可以将对手工人推入你刚离开的空间。',
+    phases: ['move'], banned: ['Hecate']
+  },
+
+  // ========== 英雄 Hero Powers ==========
+  {
+    name: 'Achilles', nameCN: '阿喀琉斯', title: 'Volatile Warrior / 善变战士',
+    icon: '🗡️', type: 'hero', players: [2],
+    ability: '<b>Your Turn:</b> <b>Once</b>, your Worker builds both before and after moving.',
+    abilityCN: '<b>你的回合：</b><b>一次性</b>，你的工人在移动前后各建造一次。',
+    phases: ['turn'], banned: ['Circe']
+  },
+  {
+    name: 'Adonis', nameCN: '阿多尼斯', title: 'Devastatingly Handsome / 迷人美少年',
+    icon: '🌹', type: 'hero', players: [2],
+    ability: '<b>End of Your Turn:</b> <b>Once</b>, choose one of your Workers and an opponent Worker. If possible, the Workers must be neighboring at the end of your opponent\'s next turn.',
+    abilityCN: '<b>回合结束时：</b><b>一次性</b>，选择你的一个工人和对手一个工人。如果可能，这两者必须在对手下一回合结束时相邻。',
+    phases: ['end'], banned: ['Circe', 'Hecate']
+  },
+  {
+    name: 'Atalanta', nameCN: '阿塔兰塔', title: 'Swift Huntress / 敏捷女猎手',
+    icon: '🏃‍♀️', type: 'hero', players: [2],
+    ability: '<b>Your Move:</b> <b>Once</b>, your Worker moves any number of additional times.',
+    abilityCN: '<b>你的移动：</b><b>一次性</b>，你的工人可以额外移动任意次数。',
+    phases: ['move'], banned: ['Circe', 'Persephone']
+  },
+  {
+    name: 'Bellerophon', nameCN: '柏勒洛丰', title: 'Tamer of Pegasus / 驯翼马者',
+    icon: '🐴', type: 'hero', players: [2],
+    ability: '<b>Your Move:</b> <b>Once</b>, your Worker moves up two levels.',
+    abilityCN: '<b>你的移动：</b><b>一次性</b>，你的工人向上移动两层。',
+    phases: ['move'], banned: ['Circe']
+  },
+  {
+    name: 'Heracles', nameCN: '赫拉克勒斯', title: 'Doer of Great Deeds / 伟大功业者',
+    icon: '💪', type: 'hero', players: [2],
+    ability: '<b>Alternative Build:</b> <b>Once</b>, both your Workers build any number of domes (even zero) at any level.',
+    abilityCN: '<b>替代建造：</b><b>一次性</b>，你的两个工人可以在任何层级建造任意数量的穹顶（包括0个）。',
+    phases: ['build'], banned: ['Circe']
+  },
+  {
+    name: 'Jason', nameCN: '伊阿宋', title: 'Leader of the Argonauts / 阿尔戈英雄之首',
+    icon: '⛵', type: 'hero', players: [2],
+    ability: '<b>Setup:</b> Place an extra Worker of your color on your God Power card.<br><br><b>Alternative Turn:</b> <b>Once</b>, place your extra Worker on an unoccupied ground-level perimeter space. Then move and build with this Worker.',
+    abilityCN: '<b>设置：</b>在你的神力牌上放置一个额外工人。<br><br><b>替代回合：</b><b>一次性</b>，将额外工人放在未占据的地面层边缘空间，然后移动和建造。',
+    phases: ['turn'], banned: ['Circe']
+  },
+  {
+    name: 'Medea', nameCN: '美狄亚', title: 'Powerful Sorceress / 强大女巫',
+    icon: '🧪', type: 'hero', players: [2],
+    ability: '<b>End of Your Turn:</b> <b>Once</b>, remove all blocks from under a Worker neighboring either of your Workers. You also remove any Tokens on the blocks.',
+    abilityCN: '<b>回合结束时：</b><b>一次性</b>，移除你任一工人相邻的一个对手工人下方所有方块，同时移除其上的标记。',
+    phases: ['end'], banned: ['Circe', 'Hecate']
+  },
+  {
+    name: 'Odysseus', nameCN: '奥德修斯', title: 'Cunning Leader / 足智多谋的首领',
+    icon: '🧠', type: 'hero', players: [2],
+    ability: '<b>Start of Your Turn:</b> <b>Once</b>, force to unoccupied corner spaces any number of opponent Workers that neighbor your Workers.',
+    abilityCN: '<b>回合开始时：</b><b>一次性</b>，将任意数量与你工人相邻的对手工人强制推到未占据的角落空间。',
+    phases: ['turn'], banned: ['Circe', 'Hecate']
+  },
+  {
+    name: 'Polyphemus', nameCN: '波吕斐摩斯', title: 'Gigantic Cyclops / 巨型独眼巨人',
+    icon: '👁️‍🗨️', type: 'hero', players: [2],
+    ability: '<b>End of Your Turn:</b> <b>Once</b>, your Worker builds up to 2 domes at any level on any unoccupied spaces on the board.',
+    abilityCN: '<b>回合结束时：</b><b>一次性</b>，你的工人在棋盘上任意未占据空间建造最多2个任何层级的穹顶。',
+    phases: ['end'], banned: ['Circe']
+  },
+  {
+    name: 'Theseus', nameCN: '忒修斯', title: 'Slayer of the Minotaur / 弥诺陶洛斯杀手',
+    icon: '🧶', type: 'hero', players: [2],
+    ability: '<b>End of Your Turn:</b> <b>Once</b>, if any of your Workers is exactly 2 levels below any neighboring opponent Workers, remove one of those opponent Workers from play.',
+    abilityCN: '<b>回合结束时：</b><b>一次性</b>，如果你的工人恰好比相邻的对手工人低2层，将其中一位对手工人移出游戏。',
+    phases: ['end'], banned: ['Circe', 'Hecate', 'Nemesis']
+  },
+];
+
+// ============================================
+// 渲染逻辑
+// ============================================
+const godGrid = document.getElementById('godGrid');
+const counter = document.getElementById('counter');
+const searchInput = document.getElementById('searchInput');
+
+let activeType = 'all';
+let activePhase = 'all';
+let searchQuery = '';
+
+const TYPE_LABELS = {
+  simple: { label: '简单神', class: 'tag-type-simple' },
+  advanced: { label: '进阶神', class: 'tag-type-advanced' },
+  golden: { label: '金羊毛', class: 'tag-type-golden' },
+  hero: { label: '英雄', class: 'tag-type-hero' },
+};
+
+const PHASE_LABELS = {
+  move: '移动', build: '建造', turn: '回合',
+  opponent: '对手回合', win: '胜利条件', end: '回合结束'
+};
+
+function getPlayerLabel(players) {
+  return players.join('/');
+}
+
+function getFilteredGods() {
+  let filtered = GODS;
+  if (activeType !== 'all') {
+    filtered = filtered.filter(g => g.type === activeType);
+  }
+  if (activePhase !== 'all') {
+    filtered = filtered.filter(g => g.phases.includes(activePhase));
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(g =>
+      g.name.toLowerCase().includes(q) ||
+      g.nameCN.includes(q) ||
+      g.title.toLowerCase().includes(q) ||
+      g.abilityCN.toLowerCase().includes(q)
+    );
+  }
+  return filtered;
+}
+
+function renderGods() {
+  const gods = getFilteredGods();
+  counter.textContent = `显示 ${gods.length} / ${GODS.length} 位天神`;
+
+  if (gods.length === 0) {
+    godGrid.innerHTML = `<div class="empty-state"><div class="empty-state__icon">🔍</div><p class="empty-state__text">没有找到匹配的天神</p></div>`;
+    return;
+  }
+
+  godGrid.innerHTML = gods.map((g, i) => {
+    const typeInfo = TYPE_LABELS[g.type];
+    const playersTag = `<span class="tag tag-players">👥 ${getPlayerLabel(g.players)}人</span>`;
+    const goldenTag = g.golden ? '<span class="tag tag-phase">🐑 金羊毛</span>' : '';
+    const phaseTags = g.phases.map(p => `<span class="tag tag-phase">${PHASE_LABELS[p] || p}</span>`).join('');
+    const bannedTag = g.banned.length > 0
+      ? `<div class="god-card__banned"><div class="god-card__banned-label">⚠️ 禁止对局</div><div class="god-card__banned-text">${g.banned.join(', ')}</div></div>`
+      : '';
+
+    const setupMatch = g.ability.match(/<b>Setup:?<\/b>\s*(.+?)(?=<br><br>|$)/s);
+    const setupText = setupMatch
+      ? `<div class="god-card__setup"><div class="god-card__setup-text">${setupMatch[1]}</div></div>`
+      : '';
+
+    return `
+      <div class="god-card" style="animation-delay: ${i * 0.04}s">
+        <div class="god-card__top">
+          <div class="god-card__icon">${g.icon}</div>
+          <div class="god-card__identity">
+            <div class="god-card__name">${g.nameCN} · ${g.name}</div>
+            <div class="god-card__title">${g.title}</div>
+          </div>
+        </div>
+        <div class="god-card__tags">
+          <span class="tag ${typeInfo.class}">${typeInfo.label}</span>
+          ${playersTag}${goldenTag}${phaseTags}
+        </div>
+        ${setupText}
+        <div class="god-card__ability">
+          <div class="god-card__ability-label">能力描述 · Ability</div>
+          <div class="god-card__ability-text">${g.abilityCN}</div>
+        </div>
+        ${bannedTag}
+      </div>
+    `;
+  }).join('');
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn[data-filter="type"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeType = btn.dataset.value;
+    document.querySelectorAll('.filter-btn[data-filter="type"]').forEach(b => {
+      b.className = 'filter-btn';
+      if (b.dataset.value === activeType) {
+        if (activeType === 'simple') b.classList.add('active-simple');
+        else if (activeType === 'advanced') b.classList.add('active-advanced');
+        else if (activeType === 'golden') b.classList.add('active-golden');
+        else if (activeType === 'hero') b.classList.add('active-hero');
+        else b.classList.add('active');
+      }
+    });
+    renderGods();
+  });
+});
+
+document.querySelectorAll('.filter-btn[data-filter="phase"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activePhase = btn.dataset.value;
+    document.querySelectorAll('.filter-btn[data-filter="phase"]').forEach(b => {
+      b.className = 'filter-btn';
+      if (b.dataset.value === activePhase) b.classList.add('active');
+    });
+    renderGods();
+  });
+});
+
+// Search
+let debounceTimer;
+searchInput.addEventListener('input', (e) => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    searchQuery = e.target.value.trim();
+    renderGods();
+  }, 150);
+});
+
+// Keyboard shortcut
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && document.activeElement !== searchInput) { e.preventDefault(); searchInput.focus(); }
+  if (e.key === 'Escape' && document.activeElement === searchInput) searchInput.blur();
+});
+
+// Random pick
+const randomBtn = document.getElementById('randomBtn');
+const randomResult = document.getElementById('randomResult');
+const randomCards = document.getElementById('randomCards');
+
+randomBtn.addEventListener('click', () => {
+  const pool = GODS.filter(g => g.type !== 'hero' && g.players.includes(2));
+  const shuffled = pool.sort(() => Math.random() - 0.5);
+  const picked = shuffled.slice(0, 2);
+
+  randomCards.innerHTML = picked.map(g => {
+    const typeInfo = TYPE_LABELS[g.type];
+    return `
+      <div class="random-god-card">
+        <div class="random-god-card__icon">${g.icon}</div>
+        <div class="random-god-card__name">${g.nameCN} · ${g.name}</div>
+        <div class="random-god-card__title">${g.title}</div>
+        <div style="margin-top:8px"><span class="tag ${typeInfo.class}">${typeInfo.label}</span></div>
+      </div>
+    `;
+  }).join('');
+
+  randomResult.classList.add('show');
+  randomResult.style.animation = 'none';
+  randomResult.offsetHeight; // trigger reflow
+  randomResult.style.animation = 'fadeInUp 0.4s ease both';
+});
+
+// Initial render
+renderGods();
+</script>
+</body>
+</html>
