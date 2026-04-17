@@ -480,18 +480,39 @@ body::after {
 
 const CATEGORIES = [
   { key: 'all',    label: '全部',   icon: '🎯' },
+  { key: 'custom', label: '个人定制', icon: '🛠️' },
+  { key: 'board',  label: '桌游',     icon: '🎲' },
+  { key: 'game',   label: '游戏',     icon: '🎮' },
   { key: 'ai',     label: 'AI 工具', icon: '🤖' },
   { key: 'dev',    label: '开发工具', icon: '💻' },
   { key: 'design', label: '设计资源', icon: '🎨' },
   { key: 'prod',   label: '效率工具', icon: '⚡' },
   { key: 'web',    label: '常用网站', icon: '🌐' },
   { key: 'media',  label: '媒体创作', icon: '🎬' },
-  { key: 'custom', label: '个人定制', icon: '🛠️' },
-  { key: 'board',  label: '桌游',     icon: '🎲' },
-  { key: 'game',   label: '游戏',     icon: '🎮' },
 ];
 
 const TOOLS = [
+  // ——— 个人定制 ———
+  { name: '我的博客',     url: 'https://luzhenhuan.github.io',     icon: '✍️', desc: '个人博客站点',       category: 'custom' },
+  { name: 'ChatGPT 定制', url: 'https://chat.openai.com',          icon: '⚙️', desc: '自定义 GPT 助手',    category: 'custom' },
+  { name: '书签收藏',     url: '#',                                icon: '🔖', desc: '常用书签与收藏夹',    category: 'custom' },
+  { name: '在线工具箱',   url: 'https://tool.lu',                  icon: '🧰', desc: '多功能在线工具集',   category: 'custom' },
+
+  // ——— 桌游 ———
+  { name: '圣托里尼天神卡', url: 'santorini.html',              icon: '🏛️', desc: '天神卡能力速查模拟器', category: 'board' },
+  { name: 'Board Game Arena', url: 'https://boardgamearena.com',    icon: '♟️', desc: '在线桌游对战平台',  category: 'board' },
+  { name: 'Yucata',          url: 'https://www.yucata.de',          icon: '🏰', desc: '德式桌游在线平台',  category: 'board' },
+  { name: 'Tabletopia',      url: 'https://tabletopia.com',         icon: '🎲', desc: '3D 桌游模拟器',     category: 'board' },
+  { name: 'BGG',             url: 'https://boardgamegeek.com',      icon: '🏆', desc: '桌游数据库与社区',  category: 'board' },
+  { name: 'PlayingCards.io', url: 'https://playingcards.io',        icon: '🃏', desc: '在线纸牌与棋盘',    category: 'board' },
+
+  // ——— 游戏 ———
+  { name: 'Steam',           url: 'https://store.steampowered.com', icon: '🎮', desc: 'PC 游戏商城与社区',   category: 'game' },
+  { name: 'Epic Games',     url: 'https://www.epicgames.com',       icon: '👾', desc: 'Epic 游戏商店',      category: 'game' },
+  { name: 'Xbox Game Pass',  url: 'https://www.xbox.com/game-pass', icon: '🟢', desc: 'Xbox 订阅制游戏服务', category: 'game' },
+  { name: 'IGN',             url: 'https://www.ign.com',            icon: '🔥', desc: '游戏评测与资讯',    category: 'game' },
+  { name: 'HowLongToBeat',   url: 'https://howlongtobeat.com',      icon: '⏱️', desc: '游戏通关时长查询',   category: 'game' },
+
   // ——— AI 工具 ———
   { name: 'ChatGPT',     url: 'https://chat.openai.com',          icon: '🤖', desc: 'OpenAI 对话式 AI 助手',      category: 'ai' },
   { name: 'Claude',      url: 'https://claude.ai',                icon: '🧠', desc: 'Anthropic 智能对话助手',     category: 'ai' },
@@ -536,27 +557,6 @@ const TOOLS = [
   { name: 'Remove.bg',     url: 'https://www.remove.bg',       icon: '✂️', desc: 'AI 一键去背景',         category: 'media' },
   { name: 'TinyPNG',       url: 'https://tinypng.com',          icon: '📦', desc: '图片无损压缩',          category: 'media' },
   { name: 'ScreenToGif',   url: 'https://www.screentogif.com', icon: '🎞️', desc: '屏幕录制转 GIF',      category: 'media' },
-
-  // ——— 个人定制 ———
-  { name: '我的博客',     url: 'https://luzhenhuan.github.io',     icon: '✍️', desc: '个人博客站点',       category: 'custom' },
-  { name: 'ChatGPT 定制', url: 'https://chat.openai.com',          icon: '⚙️', desc: '自定义 GPT 助手',    category: 'custom' },
-  { name: '书签收藏',     url: '#',                                icon: '🔖', desc: '常用书签与收藏夹',    category: 'custom' },
-  { name: '在线工具箱',   url: 'https://tool.lu',                  icon: '🧰', desc: '多功能在线工具集',   category: 'custom' },
-
-  // ——— 桌游 ———
-  { name: '圣托里尼天神卡', url: 'santorini.html',              icon: '🏛️', desc: '天神卡能力速查模拟器', category: 'board' },
-  { name: 'Board Game Arena', url: 'https://boardgamearena.com',    icon: '♟️', desc: '在线桌游对战平台',  category: 'board' },
-  { name: 'Yucata',          url: 'https://www.yucata.de',          icon: '🏰', desc: '德式桌游在线平台',  category: 'board' },
-  { name: 'Tabletopia',      url: 'https://tabletopia.com',         icon: '🎲', desc: '3D 桌游模拟器',     category: 'board' },
-  { name: 'BGG',             url: 'https://boardgamegeek.com',      icon: '🏆', desc: '桌游数据库与社区',  category: 'board' },
-  { name: 'PlayingCards.io', url: 'https://playingcards.io',        icon: '🃏', desc: '在线纸牌与棋盘',    category: 'board' },
-
-  // ——— 游戏 ———
-  { name: 'Steam',           url: 'https://store.steampowered.com', icon: '🎮', desc: 'PC 游戏商城与社区',   category: 'game' },
-  { name: 'Epic Games',     url: 'https://www.epicgames.com',       icon: '👾', desc: 'Epic 游戏商店',      category: 'game' },
-  { name: 'Xbox Game Pass',  url: 'https://www.xbox.com/game-pass', icon: '🟢', desc: 'Xbox 订阅制游戏服务', category: 'game' },
-  { name: 'IGN',             url: 'https://www.ign.com',            icon: '🔥', desc: '游戏评测与资讯',    category: 'game' },
-  { name: 'HowLongToBeat',   url: 'https://howlongtobeat.com',      icon: '⏱️', desc: '游戏通关时长查询',   category: 'game' },
 ];
 
 // ============================================
