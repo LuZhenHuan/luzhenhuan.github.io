@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>健康管理 · HealthTracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0e0f11; --bg-surface: #16181c; --bg-card: #1c1f24; --bg-card-hover: #22262d;
+  --border: #2a2d35; --border-hover: #3d4150; --text: #e8eaed; --text-secondary: #8b8fa3;
+  --text-muted: #5c6070; --accent: #e8a44a; --accent-subtle: rgba(232,164,74,0.1);
+  --accent-glow: rgba(232,164,74,0.25); --red: #ef5350; --red-bg: rgba(239,83,80,0.1);
+  --green: #66bb6a; --green-bg: rgba(102,187,106,0.1); --blue: #42a5f5; --blue-bg: rgba(66,165,245,0.1);
+  --purple: #ab47bc; --purple-bg: rgba(171,71,188,0.1); --orange: #ff9800;
+  --radius: 12px; --radius-sm: 8px; --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+  --font-display: 'Outfit', sans-serif; --font-body: 'Noto Sans SC', system-ui, sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:-20%;right:-10%;width:50vw;height:50vw;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);opacity:.2;pointer-events:none;z-index:0}
+.container{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 20px}
+
+/* HEADER */
+.header{padding:32px 0 12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.header__back{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:50px;border:1px solid var(--border);transition:all var(--transition)}
+.header__back:hover{color:var(--accent);border-color:var(--accent)}
+.header__title{font-family:var(--font-display);font-size:clamp(1.5rem,4vw,2.2rem);font-weight:700;letter-spacing:-.02em}
+.header__title span{color:var(--accent)}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin:20px 0 24px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{padding:10px 20px;background:0;border:0;color:var(--text-muted);font-size:.9rem;font-family:var(--font-body);cursor:pointer;transition:all var(--transition);position:relative;font-weight:500}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent)}
+.tab-btn.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);border-radius:2px 2px 0 0}
+
+/* PANEL */
+.panel{display:none;animation:fadeIn .3s ease}
+.panel.active{display:block}
+
+/* INPUT FORM */
+.record-form{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+.record-form__title{font-family:var(--font-display);font-size:1.05rem;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:.75rem;color:var(--text-muted);font-weight:500}
+.form-group input,.form-group select,.form-group textarea{padding:10px 12px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:.88rem;font-family:var(--font-body);outline:0;transition:all var(--transition)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-subtle)}
+.form-group textarea{resize:vertical;min-height:60px}
+.form-group select{cursor:pointer}
+.form-group select option{background:var(--bg-surface);color:var(--text)}
+.btn{padding:10px 24px;border:0;border-radius:var(--radius-sm);font-size:.88rem;font-family:var(--font-body);cursor:pointer;transition:all var(--transition);font-weight:500}
+.btn-primary{background:var(--accent);color:#0e0f11}
+.btn-primary:hover{box-shadow:0 4px 16px var(--accent-glow);transform:translateY(-1px)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,83,80,.25)}
+.btn-danger:hover{background:rgba(239,83,80,.2)}
+.btn-ghost{background:var(--bg-surface);color:var(--text-secondary);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border-hover);color:var(--text)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* SUMMARY CARDS */
+.summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+.stat-card__label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px}
+.stat-card__value{font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1.2}
+.stat-card__sub{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+.stat-card--accent .stat-card__value{color:var(--accent)}
+.stat-card--red .stat-card__value{color:var(--red)}
+.stat-card--green .stat-card__value{color:var(--green)}
+.stat-card--blue .stat-card__value{color:var(--blue)}
+.stat-card--purple .stat-card__value{color:var(--purple)}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px;margin-bottom:24px}
+.chart-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;overflow:hidden}
+.chart-box__title{font-family:var(--font-display);font-size:.95rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.chart-box canvas{width:100%!important;max-height:260px}
+
+/* PERIOD SELECTOR */
+.period-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.period-bar__label{font-size:.78rem;color:var(--text-muted);margin-right:4px}
+.period-btn{padding:5px 12px;background:var(--bg-surface);border:1px solid var(--border);border-radius:50px;color:var(--text-secondary);font-size:.78rem;cursor:pointer;transition:all var(--transition)}
+.period-btn:hover{border-color:var(--border-hover);color:var(--text)}
+.period-btn.active{background:var(--accent);border-color:var(--accent);color:#0e0f11;font-weight:500}
+
+/* HISTORY TABLE */
+.history{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px}
+.history__header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.history__title{font-family:var(--font-display);font-size:.95rem;font-weight:600}
+.history table{width:100%;border-collapse:collapse}
+.history th{padding:10px 16px;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;text-align:left;border-bottom:1px solid var(--border);background:var(--bg-surface)}
+.history td{padding:10px 16px;font-size:.84rem;color:var(--text-secondary);border-bottom:1px solid var(--border)}
+.history tr:hover td{background:rgba(255,255,255,.02)}
+.history tr:last-child td{border-bottom:0}
+.tag-normal{color:var(--green);font-weight:500}
+.tag-warning{color:var(--orange);font-weight:500}
+.tag-danger{color:var(--red);font-weight:500}
+.delete-btn{background:0;border:0;color:var(--text-muted);cursor:pointer;font-size:.85rem;transition:color var(--transition)}
+.delete-btn:hover{color:var(--red)}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty__icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
+.empty__text{font-size:.9rem;color:var(--text-secondary)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;background:var(--bg-card);border:1px solid var(--green);border-radius:var(--radius-sm);color:var(--green);font-size:.85rem;z-index:999;opacity:0;transform:translateY(12px);transition:all .3s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px 0 40px;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border);margin-top:24px}
+.footer a{color:var(--accent);text-decoration:none}
+
+/* ANIMATION */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .form-grid{grid-template-columns:1fr 1fr}
+  .charts-grid{grid-template-columns:1fr}
+  .summary{grid-template-columns:1fr 1fr}
+  .history th,.history td{padding:8px 10px;font-size:.78rem}
+  .stat-card__value{font-size:1.3rem}
+}
+@media(max-width:480px){
+  .form-grid{grid-template-columns:1fr}
+  .summary{grid-template-columns:1fr}
+}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <a href="index.html" class="header__back">← 返回导航</a>
+    <h1 class="header__title">健康<span>管理</span></h1>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="sugar">🩸 血糖管理</button>
+    <button class="tab-btn" data-tab="pressure">💓 血压管理</button>
+  </nav>
+
+  <!-- ====== 血糖管理 ====== -->
+  <div class="panel active" id="panel-sugar">
+    <div class="record-form">
+      <div class="record-form__title">📝 记录血糖</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>日期</label>
+          <input type="date" id="sugar-date">
+        </div>
+        <div class="form-group">
+          <label>时间</label>
+          <input type="time" id="sugar-time">
+        </div>
+        <div class="form-group">
+          <label>血糖值 (mmol/L)</label>
+          <input type="number" id="sugar-value" step="0.1" min="0" max="40" placeholder="例: 5.6">
+        </div>
+        <div class="form-group">
+          <label>测量时段</label>
+          <select id="sugar-period">
+            <option value="fasting">空腹</option>
+            <option value="after_breakfast">早餐后2h</option>
+            <option value="before_lunch">午餐前</option>
+            <option value="after_lunch">午餐后2h</option>
+            <option value="before_dinner">晚餐前</option>
+            <option value="after_dinner">晚餐后2h</option>
+            <option value="bedtime">睡前</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>备注</label>
+          <input type="text" id="sugar-note" placeholder="饮食、运动、用药等">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="sugar-add">＋ 添加记录</button>
+        <button class="btn btn-danger" id="sugar-clear">🗑️ 清空数据</button>
+        <button class="btn btn-ghost" id="sugar-export">📥 导出 CSV</button>
+      </div>
+    </div>
+
+    <div class="summary" id="sugar-summary"></div>
+
+    <div class="period-bar">
+      <span class="period-bar__label">图表周期：</span>
+      <button class="period-btn active" data-chart-period="sugar" data-days="7">近7天</button>
+      <button class="period-btn" data-chart-period="sugar" data-days="14">近14天</button>
+      <button class="period-btn" data-chart-period="sugar" data-days="30">近30天</button>
+      <button class="period-btn" data-chart-period="sugar" data-days="90">近90天</button>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-box">
+        <div class="chart-box__title">📈 血糖趋势</div>
+        <canvas id="sugar-trend-chart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box__title">📊 时段分布</div>
+        <canvas id="sugar-period-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="history">
+      <div class="history__header">
+        <div class="history__title">📋 历史记录</div>
+        <span style="font-size:.78rem;color:var(--text-muted)" id="sugar-count"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>日期</th><th>时间</th><th>血糖值</th><th>时段</th><th>状态</th><th>备注</th><th></th></tr></thead>
+          <tbody id="sugar-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 血压管理 ====== -->
+  <div class="panel" id="panel-pressure">
+    <div class="record-form">
+      <div class="record-form__title">📝 记录血压</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>日期</label>
+          <input type="date" id="bp-date">
+        </div>
+        <div class="form-group">
+          <label>时间</label>
+          <input type="time" id="bp-time">
+        </div>
+        <div class="form-group">
+          <label>收缩压 (mmHg)</label>
+          <input type="number" id="bp-systolic" min="60" max="260" placeholder="例: 120">
+        </div>
+        <div class="form-group">
+          <label>舒张压 (mmHg)</label>
+          <input type="number" id="bp-diastolic" min="30" max="160" placeholder="例: 80">
+        </div>
+        <div class="form-group">
+          <label>脉搏 (次/分)</label>
+          <input type="number" id="bp-pulse" min="30" max="220" placeholder="例: 72">
+        </div>
+        <div class="form-group">
+          <label>测量体位</label>
+          <select id="bp-posture">
+            <option value="sitting">坐位</option>
+            <option value="standing">立位</option>
+            <option value="lying">卧位</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>备注</label>
+          <input type="text" id="bp-note" placeholder="用药、情绪、运动等">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="bp-add">＋ 添加记录</button>
+        <button class="btn btn-danger" id="bp-clear">🗑️ 清空数据</button>
+        <button class="btn btn-ghost" id="bp-export">📥 导出 CSV</button>
+      </div>
+    </div>
+
+    <div class="summary" id="bp-summary"></div>
+
+    <div class="period-bar">
+      <span class="period-bar__label">图表周期：</span>
+      <button class="period-btn active" data-chart-period="bp" data-days="7">近7天</button>
+      <button class="period-btn" data-chart-period="bp" data-days="14">近14天</button>
+      <button class="period-btn" data-chart-period="bp" data-days="30">近30天</button>
+      <button class="period-btn" data-chart-period="bp" data-days="90">近90天</button>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-box">
+        <div class="chart-box__title">📈 血压趋势</div>
+        <canvas id="bp-trend-chart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box__title">💓 脉搏趋势</div>
+        <canvas id="bp-pulse-chart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box__title">📊 血压分级分布</div>
+        <canvas id="bp-class-chart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box__title">🎯 脉压差分布</div>
+        <canvas id="bp-pp-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="history">
+      <div class="history__header">
+        <div class="history__title">📋 历史记录</div>
+        <span style="font-size:.78rem;color:var(--text-muted)" id="bp-count"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>日期</th><th>时间</th><th>收缩压</th><th>舒张压</th><th>脉搏</th><th>分级</th><th>备注</th><th></th></tr></thead>
+          <tbody id="bp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    数据仅保存在浏览器本地 · HealthTracker · <a href="index.html">返回导航</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// 工具函数
+// ============================================
+const $ = id => document.getElementById(id);
+const LS_SUGAR = 'health_sugar';
+const LS_BP = 'health_bp';
+
+function loadData(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
+}
+function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function now() {
+  const d = new Date();
+  return {
+    date: d.toISOString().slice(0, 10),
+    time: d.toTimeString().slice(0, 5)
+  };
+}
+
+function formatDate(d) { return d || '-'; }
+
+// 血糖评估
+function sugarStatus(v, period) {
+  if (period === 'fasting') {
+    if (v < 3.9) return { label: '偏低', cls: 'tag-warning' };
+    if (v <= 6.1) return { label: '正常', cls: 'tag-normal' };
+    if (v <= 7.0) return { label: '偏高', cls: 'tag-warning' };
+    return { label: '过高', cls: 'tag-danger' };
+  }
+  if (v < 3.9) return { label: '偏低', cls: 'tag-warning' };
+  if (v <= 7.8) return { label: '正常', cls: 'tag-normal' };
+  if (v <= 11.1) return { label: '偏高', cls: 'tag-warning' };
+  return { label: '过高', cls: 'tag-danger' };
+}
+
+const SUGAR_PERIOD_LABELS = {
+  fasting: '空腹', after_breakfast: '早餐后2h', before_lunch: '午餐前',
+  after_lunch: '午餐后2h', before_dinner: '晚餐前', after_dinner: '晚餐后2h',
+  bedtime: '睡前', other: '其他'
+};
+
+// 血压分级
+function bpClassify(sys, dia) {
+  if (sys < 90 || dia < 60) return { label: '低血压', cls: 'tag-warning' };
+  if (sys <= 120 && dia <= 80) return { label: '正常', cls: 'tag-normal' };
+  if (sys <= 139 || dia <= 89) return { label: '偏高', cls: 'tag-warning' };
+  if (sys <= 159 || dia <= 99) return { label: '1级高血压', cls: 'tag-danger' };
+  if (sys <= 179 || dia <= 109) return { label: '2级高血压', cls: 'tag-danger' };
+  return { label: '3级高血压', cls: 'tag-danger' };
+}
+
+function bpCategory(sys, dia) {
+  if (sys < 90 || dia < 60) return '低血压';
+  if (sys <= 120 && dia <= 80) return '正常';
+  if (sys <= 129 && dia <= 84) return '正常高值';
+  if (sys <= 139 || dia <= 89) return '偏高';
+  if (sys <= 159 || dia <= 99) return '1级高血压';
+  if (sys <= 179 || dia <= 109) return '2级高血压';
+  return '3级高血压';
+}
+
+const POSTURE_LABELS = { sitting: '坐位', standing: '立位', lying: '卧位' };
+
+// ============================================
+// TAB 切换
+// ============================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $('panel-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'sugar') sugarRenderAll();
+    else bpRenderAll();
+  });
+});
+
+// ============================================
+// 血糖管理
+// ============================================
+let sugarDays = 7;
+let sugarTrendChart, sugarPeriodChart;
+
+function sugarInit() {
+  const n = now();
+  $('sugar-date').value = n.date;
+  $('sugar-time').value = n.time;
+}
+
+$('sugar-add').addEventListener('click', () => {
+  const date = $('sugar-date').value;
+  const time = $('sugar-time').value;
+  const value = parseFloat($('sugar-value').value);
+  const period = $('sugar-period').value;
+  const note = $('sugar-note').value.trim();
+  if (!date || !time || isNaN(value) || value <= 0) { showToast('⚠️ 请填写完整的日期、时间和血糖值'); return; }
+  const data = loadData(LS_SUGAR);
+  data.push({ id: Date.now(), date, time, value, period, note });
+  data.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  saveData(LS_SUGAR, data);
+  $('sugar-value').value = '';
+  $('sugar-note').value = '';
+  showToast('✅ 血糖记录已添加');
+  sugarRenderAll();
+});
+
+$('sugar-clear').addEventListener('click', () => {
+  if (!confirm('确定清空所有血糖数据？此操作不可恢复。')) return;
+  localStorage.removeItem(LS_SUGAR);
+  showToast('🗑️ 血糖数据已清空');
+  sugarRenderAll();
+});
+
+$('sugar-export').addEventListener('click', () => {
+  const data = loadData(LS_SUGAR);
+  if (!data.length) { showToast('⚠️ 暂无数据可导出'); return; }
+  const csv = '日期,时间,血糖值(mmol/L),时段,备注\n' + data.map(r =>
+    `${r.date},${r.time},${r.value},${SUGAR_PERIOD_LABELS[r.period] || r.period},"${r.note || ''}"`
+  ).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `血糖记录_${now().date}.csv`; a.click();
+  showToast('📥 CSV 已下载');
+});
+
+// Period selector
+document.querySelectorAll('.period-btn[data-chart-period="sugar"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn[data-chart-period="sugar"]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    sugarDays = parseInt(btn.dataset.days);
+    sugarRenderAll();
+  });
+});
+
+function sugarRenderAll() {
+  const data = loadData(LS_SUGAR);
+  sugarRenderSummary(data);
+  sugarRenderTrend(data);
+  sugarRenderPeriod(data);
+  sugarRenderTable(data);
+}
+
+function sugarRenderSummary(data) {
+  const el = $('sugar-summary');
+  if (!data.length) { el.innerHTML = ''; return; }
+  const vals = data.map(d => d.value);
+  const avg = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+  const latest = vals[vals.length - 1];
+  const max = Math.max(...vals).toFixed(1);
+  const min = Math.min(...vals).toFixed(1);
+  const fastingVals = data.filter(d => d.period === 'fasting').map(d => d.value);
+  const fastingAvg = fastingVals.length ? (fastingVals.reduce((a, b) => a + b, 0) / fastingVals.length).toFixed(1) : '-';
+  const abnormal = vals.filter(v => v > 7.8 || v < 3.9).length;
+  const abnormalRate = (abnormal / vals.length * 100).toFixed(0);
+
+  el.innerHTML = `
+    <div class="stat-card stat-card--accent"><div class="stat-card__label">最新记录</div><div class="stat-card__value">${latest} <small style="font-size:.6em;color:var(--text-muted)">mmol/L</small></div></div>
+    <div class="stat-card stat-card--blue"><div class="stat-card__label">平均值</div><div class="stat-card__value">${avg} <small style="font-size:.6em;color:var(--text-muted)">mmol/L</small></div></div>
+    <div class="stat-card stat-card--green"><div class="stat-card__label">空腹均值</div><div class="stat-card__value">${fastingAvg} <small style="font-size:.6em;color:var(--text-muted)">mmol/L</small></div></div>
+    <div class="stat-card stat-card--red"><div class="stat-card__label">异常比例</div><div class="stat-card__value">${abnormalRate}<small style="font-size:.6em;color:var(--text-muted)">%</small></div><div class="stat-card__sub">${abnormal}/${vals.length} 条异常</div></div>
+    <div class="stat-card stat-card--purple"><div class="stat-card__label">最高值</div><div class="stat-card__value">${max}</div></div>
+    <div class="stat-card stat-card--accent"><div class="stat-card__label">最低值</div><div class="stat-card__value">${min}</div></div>
+  `;
+}
+
+function sugarRenderTrend(data) {
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - sugarDays);
+  const filtered = data.filter(d => new Date(d.date) >= cutoff);
+  const labels = filtered.map(d => d.date.slice(5) + ' ' + d.time);
+  const values = filtered.map(d => d.value);
+
+  const ctx = $('sugar-trend-chart').getContext('2d');
+  if (sugarTrendChart) sugarTrendChart.destroy();
+  sugarTrendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: '血糖值', data: values, borderColor: '#e8a44a', backgroundColor: 'rgba(232,164,74,0.1)', fill: true, tension: 0.3, pointRadius: 3, pointHoverRadius: 6 },
+        { label: '空腹上限 6.1', data: Array(labels.length).fill(6.1), borderColor: 'rgba(239,83,80,0.4)', borderDash: [6,3], pointRadius: 0, fill: false },
+        { label: '餐后上限 7.8', data: Array(labels.length).fill(7.8), borderColor: 'rgba(239,83,80,0.6)', borderDash: [6,3], pointRadius: 0, fill: false },
+        { label: '空腹下限 3.9', data: Array(labels.length).fill(3.9), borderColor: 'rgba(66,165,245,0.4)', borderDash: [6,3], pointRadius: 0, fill: false },
+      ]
+    },
+    options: chartOpts('mmol/L')
+  });
+}
+
+function sugarRenderPeriod(data) {
+  const periods = ['fasting','after_breakfast','before_lunch','after_lunch','before_dinner','after_dinner','bedtime','other'];
+  const stats = periods.map(p => {
+    const vals = data.filter(d => d.period === p).map(d => d.value);
+    return { period: SUGAR_PERIOD_LABELS[p], avg: vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : 0, count: vals.length };
+  }).filter(s => s.count > 0);
+
+  const ctx = $('sugar-period-chart').getContext('2d');
+  if (sugarPeriodChart) sugarPeriodChart.destroy();
+  sugarPeriodChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: stats.map(s => s.period),
+      datasets: [{
+        label: '平均血糖 (mmol/L)',
+        data: stats.map(s => parseFloat(s.avg)),
+        backgroundColor: stats.map(s => parseFloat(s.avg) > 7.8 ? 'rgba(239,83,80,0.6)' : parseFloat(s.avg) > 6.1 ? 'rgba(255,152,0,0.5)' : 'rgba(102,187,106,0.5)'),
+        borderRadius: 6
+      }]
+    },
+    options: { ...chartOpts('mmol/L'), plugins: { ...chartOpts('').plugins, legend: { display: false } } }
+  });
+}
+
+function sugarRenderTable(data) {
+  const tbody = $('sugar-tbody');
+  $('sugar-count').textContent = `共 ${data.length} 条`;
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty__icon">🩸</div><div class="empty__text">暂无记录，请添加血糖数据</div></div></td></tr>'; return; }
+  const recent = [...data].reverse().slice(0, 50);
+  tbody.innerHTML = recent.map(r => {
+    const st = sugarStatus(r.value, r.period);
+    return `<tr>
+      <td>${r.date}</td><td>${r.time}</td><td><b>${r.value}</b></td>
+      <td>${SUGAR_PERIOD_LABELS[r.period] || r.period}</td>
+      <td><span class="${st.cls}">${st.label}</span></td>
+      <td>${r.note || '-'}</td>
+      <td><button class="delete-btn" onclick="sugarDelete(${r.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function sugarDelete(id) {
+  const data = loadData(LS_SUGAR).filter(d => d.id !== id);
+  saveData(LS_SUGAR, data);
+  showToast('🗑️ 已删除');
+  sugarRenderAll();
+}
+
+// ============================================
+// 血压管理
+// ============================================
+let bpDays = 7;
+let bpTrendChart, bpPulseChart, bpClassChart, bpPPChart;
+
+function bpInit() {
+  const n = now();
+  $('bp-date').value = n.date;
+  $('bp-time').value = n.time;
+}
+
+$('bp-add').addEventListener('click', () => {
+  const date = $('bp-date').value;
+  const time = $('bp-time').value;
+  const systolic = parseInt($('bp-systolic').value);
+  const diastolic = parseInt($('bp-diastolic').value);
+  const pulse = parseInt($('bp-pulse').value) || 0;
+  const posture = $('bp-posture').value;
+  const note = $('bp-note').value.trim();
+  if (!date || !time || isNaN(systolic) || isNaN(diastolic) || systolic <= 0 || diastolic <= 0) {
+    showToast('⚠️ 请填写完整的日期、时间和血压值'); return;
+  }
+  const data = loadData(LS_BP);
+  data.push({ id: Date.now(), date, time, systolic, diastolic, pulse, posture, note });
+  data.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  saveData(LS_BP, data);
+  $('bp-systolic').value = ''; $('bp-diastolic').value = ''; $('bp-pulse').value = ''; $('bp-note').value = '';
+  showToast('✅ 血压记录已添加');
+  bpRenderAll();
+});
+
+$('bp-clear').addEventListener('click', () => {
+  if (!confirm('确定清空所有血压数据？此操作不可恢复。')) return;
+  localStorage.removeItem(LS_BP);
+  showToast('🗑️ 血压数据已清空');
+  bpRenderAll();
+});
+
+$('bp-export').addEventListener('click', () => {
+  const data = loadData(LS_BP);
+  if (!data.length) { showToast('⚠️ 暂无数据可导出'); return; }
+  const csv = '日期,时间,收缩压(mmHg),舒张压(mmHg),脉搏(次/分),体位,备注\n' + data.map(r =>
+    `${r.date},${r.time},${r.systolic},${r.diastolic},${r.pulse || '-'},${POSTURE_LABELS[r.posture] || r.posture},"${r.note || ''}"`
+  ).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `血压记录_${now().date}.csv`; a.click();
+  showToast('📥 CSV 已下载');
+});
+
+document.querySelectorAll('.period-btn[data-chart-period="bp"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn[data-chart-period="bp"]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    bpDays = parseInt(btn.dataset.days);
+    bpRenderAll();
+  });
+});
+
+function bpRenderAll() {
+  const data = loadData(LS_BP);
+  bpRenderSummary(data);
+  bpRenderTrend(data);
+  bpRenderPulse(data);
+  bpRenderClass(data);
+  bpRenderPP(data);
+  bpRenderTable(data);
+}
+
+function bpRenderSummary(data) {
+  const el = $('bp-summary');
+  if (!data.length) { el.innerHTML = ''; return; }
+  const sys = data.map(d => d.systolic);
+  const dia = data.map(d => d.diastolic);
+  const pul = data.filter(d => d.pulse).map(d => d.pulse);
+  const avgSys = (sys.reduce((a,b)=>a+b,0)/sys.length).toFixed(0);
+  const avgDia = (dia.reduce((a,b)=>a+b,0)/dia.length).toFixed(0);
+  const avgPul = pul.length ? (pul.reduce((a,b)=>a+b,0)/pul.length).toFixed(0) : '-';
+  const latest = data[data.length - 1];
+  const hypertensive = data.filter(d => bpClassify(d.systolic, d.diastolic).cls === 'tag-danger').length;
+  const hyperRate = (hypertensive / data.length * 100).toFixed(0);
+  const avgPP = ((sys.reduce((a,b)=>a+b,0)/sys.length) - (dia.reduce((a,b)=>a+b,0)/dia.length)).toFixed(0);
+
+  el.innerHTML = `
+    <div class="stat-card stat-card--red"><div class="stat-card__label">最新收缩压/舒张压</div><div class="stat-card__value">${latest.systolic}/${latest.diastolic} <small style="font-size:.55em;color:var(--text-muted)">mmHg</small></div></div>
+    <div class="stat-card stat-card--blue"><div class="stat-card__label">平均收缩压</div><div class="stat-card__value">${avgSys}</div></div>
+    <div class="stat-card stat-card--purple"><div class="stat-card__label">平均舒张压</div><div class="stat-card__value">${avgDia}</div></div>
+    <div class="stat-card stat-card--accent"><div class="stat-card__label">平均脉搏</div><div class="stat-card__value">${avgPul} <small style="font-size:.55em;color:var(--text-muted)">bpm</small></div></div>
+    <div class="stat-card stat-card--red"><div class="stat-card__label">高血压比例</div><div class="stat-card__value">${hyperRate}<small style="font-size:.55em;color:var(--text-muted)">%</small></div><div class="stat-card__sub">${hypertensive}/${data.length} 条</div></div>
+    <div class="stat-card stat-card--green"><div class="stat-card__label">平均脉压差</div><div class="stat-card__value">${avgPP} <small style="font-size:.55em;color:var(--text-muted)">mmHg</small></div></div>
+  `;
+}
+
+function bpRenderTrend(data) {
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - bpDays);
+  const filtered = data.filter(d => new Date(d.date) >= cutoff);
+  const labels = filtered.map(d => d.date.slice(5) + ' ' + d.time);
+
+  const ctx = $('bp-trend-chart').getContext('2d');
+  if (bpTrendChart) bpTrendChart.destroy();
+  bpTrendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: '收缩压', data: filtered.map(d => d.systolic), borderColor: '#ef5350', backgroundColor: 'rgba(239,83,80,0.08)', fill: true, tension: 0.3, pointRadius: 3 },
+        { label: '舒张压', data: filtered.map(d => d.diastolic), borderColor: '#ab47bc', backgroundColor: 'rgba(171,71,188,0.08)', fill: true, tension: 0.3, pointRadius: 3 },
+        { label: '正常上限 120/80', data: Array(labels.length).fill(120), borderColor: 'rgba(102,187,106,0.4)', borderDash: [6,3], pointRadius: 0 },
+        { label: '高压线 140', data: Array(labels.length).fill(140), borderColor: 'rgba(239,83,80,0.5)', borderDash: [6,3], pointRadius: 0 },
+      ]
+    },
+    options: chartOpts('mmHg')
+  });
+}
+
+function bpRenderPulse(data) {
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - bpDays);
+  const filtered = data.filter(d => new Date(d.date) >= cutoff && d.pulse);
+  const labels = filtered.map(d => d.date.slice(5) + ' ' + d.time);
+
+  const ctx = $('bp-pulse-chart').getContext('2d');
+  if (bpPulseChart) bpPulseChart.destroy();
+  bpPulseChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '脉搏', data: filtered.map(d => d.pulse),
+        borderColor: '#42a5f5', backgroundColor: 'rgba(66,165,245,0.08)', fill: true,
+        tension: 0.3, pointRadius: 3
+      }]
+    },
+    options: chartOpts('bpm')
+  });
+}
+
+function bpRenderClass(data) {
+  const categories = {};
+  data.forEach(d => {
+    const c = bpCategory(d.systolic, d.diastolic);
+    categories[c] = (categories[c] || 0) + 1;
+  });
+  const catOrder = ['正常','正常高值','偏高','1级高血压','2级高血压','3级高血压','低血压'];
+  const catColors = { '正常':'#66bb6a','正常高值':'#aed581','偏高':'#ff9800','1级高血压':'#ef5350','2级高血压':'#c62828','3级高血压':'#b71c1c','低血压':'#42a5f5' };
+  const labels = catOrder.filter(c => categories[c]);
+  const values = labels.map(l => categories[l]);
+  const colors = labels.map(l => catColors[l] || '#888');
+
+  const ctx = $('bp-class-chart').getContext('2d');
+  if (bpClassChart) bpClassChart.destroy();
+  bpClassChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#8b8fa3', font: { size: 11 }, padding: 12, usePointStyle: true, pointStyle: 'circle' } }
+      }
+    }
+  });
+}
+
+function bpRenderPP(data) {
+  const pp = data.map(d => d.systolic - d.diastolic);
+  const ranges = ['30以下','30-40','40-50','50-60','60以上'];
+  const counts = [
+    pp.filter(v => v < 30).length,
+    pp.filter(v => v >= 30 && v < 40).length,
+    pp.filter(v => v >= 40 && v < 50).length,
+    pp.filter(v => v >= 50 && v < 60).length,
+    pp.filter(v => v >= 60).length
+  ];
+  const ppColors = ['rgba(66,165,245,0.6)','rgba(102,187,106,0.6)','rgba(232,164,74,0.6)','rgba(255,152,0,0.6)','rgba(239,83,80,0.6)'];
+
+  const ctx = $('bp-pp-chart').getContext('2d');
+  if (bpPPChart) bpPPChart.destroy();
+  bpPPChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ranges,
+      datasets: [{ label: '次数', data: counts, backgroundColor: ppColors, borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      scales: { y: { beginAtZero: true, ticks: { color: '#5c6070', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.04)' } }, x: { ticks: { color: '#8b8fa3' }, grid: { display: false } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function bpRenderTable(data) {
+  const tbody = $('bp-tbody');
+  $('bp-count').textContent = `共 ${data.length} 条`;
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty__icon">💓</div><div class="empty__text">暂无记录，请添加血压数据</div></div></td></tr>'; return; }
+  const recent = [...data].reverse().slice(0, 50);
+  tbody.innerHTML = recent.map(r => {
+    const cl = bpClassify(r.systolic, r.diastolic);
+    return `<tr>
+      <td>${r.date}</td><td>${r.time}</td>
+      <td><b>${r.systolic}</b></td><td><b>${r.diastolic}</b></td>
+      <td>${r.pulse || '-'}</td>
+      <td><span class="${cl.cls}">${cl.label}</span></td>
+      <td>${r.note || '-'}</td>
+      <td><button class="delete-btn" onclick="bpDelete(${r.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function bpDelete(id) {
+  const data = loadData(LS_BP).filter(d => d.id !== id);
+  saveData(LS_BP, data);
+  showToast('🗑️ 已删除');
+  bpRenderAll();
+}
+
+// ============================================
+// Chart.js 通用配置
+// ============================================
+function chartOpts(unit) {
+  return {
+    responsive: true, maintainAspectRatio: true,
+    interaction: { intersect: false, mode: 'index' },
+    scales: {
+      y: { ticks: { color: '#5c6070', callback: v => v + (unit ? ' ' + unit : '') }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      x: { ticks: { color: '#5c6070', maxTicksLimit: 12, maxRotation: 45 }, grid: { display: false } }
+    },
+    plugins: {
+      legend: { labels: { color: '#8b8fa3', font: { size: 11 }, usePointStyle: true, pointStyle: 'circle', padding: 16 } },
+      tooltip: { backgroundColor: '#1c1f24', titleColor: '#e8eaed', bodyColor: '#8b8fa3', borderColor: '#2a2d35', borderWidth: 1 }
+    }
+  };
+}
+
+// ============================================
+// 初始化
+// ============================================
+sugarInit();
+bpInit();
+
+// 支持 hash 跳转（从导航页点击直接到对应 tab）
+function handleHash() {
+  const hash = location.hash.replace('#', '');
+  if (hash === 'pressure') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('.tab-btn[data-tab="pressure"]').classList.add('active');
+    $('panel-pressure').classList.add('active');
+    bpRenderAll();
+  } else {
+    sugarRenderAll();
+  }
+}
+handleHash();
+window.addEventListener('hashchange', handleHash);
+</script>
+</body>
+</html>
