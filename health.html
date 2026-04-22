@@ -62,7 +62,8 @@ body::after{content:'';position:fixed;top:-20%;right:-10%;width:50vw;height:50vw
 .btn-danger:hover{background:rgba(239,83,80,.2)}
 .btn-ghost{background:var(--bg-surface);color:var(--text-secondary);border:1px solid var(--border)}
 .btn-ghost:hover{border-color:var(--border-hover);color:var(--text)}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.import-hidden{display:none}
 
 /* SUMMARY CARDS */
 .summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px}
@@ -188,7 +189,10 @@ body::after{content:'';position:fixed;top:-20%;right:-10%;width:50vw;height:50vw
       <div class="btn-row">
         <button class="btn btn-primary" id="sugar-add">＋ 添加记录</button>
         <button class="btn btn-danger" id="sugar-clear">🗑️ 清空数据</button>
-        <button class="btn btn-ghost" id="sugar-export">📥 导出 CSV</button>
+        <button class="btn btn-ghost" id="sugar-export-json">📤 导出备份</button>
+        <button class="btn btn-ghost" id="sugar-import-json">📥 导入备份</button>
+        <input type="file" class="import-hidden" id="sugar-import-file" accept=".json">
+        <button class="btn btn-ghost" id="sugar-export-csv">📥 导出 CSV</button>
       </div>
     </div>
 
@@ -268,7 +272,10 @@ body::after{content:'';position:fixed;top:-20%;right:-10%;width:50vw;height:50vw
       <div class="btn-row">
         <button class="btn btn-primary" id="bp-add">＋ 添加记录</button>
         <button class="btn btn-danger" id="bp-clear">🗑️ 清空数据</button>
-        <button class="btn btn-ghost" id="bp-export">📥 导出 CSV</button>
+        <button class="btn btn-ghost" id="bp-export-json">📤 导出备份</button>
+        <button class="btn btn-ghost" id="bp-import-json">📥 导入备份</button>
+        <input type="file" class="import-hidden" id="bp-import-file" accept=".json">
+        <button class="btn btn-ghost" id="bp-export-csv">📥 导出 CSV</button>
       </div>
     </div>
 
@@ -442,7 +449,42 @@ $('sugar-clear').addEventListener('click', () => {
   sugarRenderAll();
 });
 
-$('sugar-export').addEventListener('click', () => {
+$('sugar-export-json').addEventListener('click', () => {
+  const data = loadData(LS_SUGAR);
+  if (!data.length) { showToast('⚠️ 暂无数据可导出'); return; }
+  const json = JSON.stringify({ type: 'sugar', version: 1, exportedAt: new Date().toISOString(), data }, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `血糖备份_${now().date}.json`; a.click();
+  showToast('📤 JSON 备份已下载');
+});
+
+$('sugar-import-json').addEventListener('click', () => $('sugar-import-file').click());
+$('sugar-import-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const obj = JSON.parse(ev.target.result);
+      if (obj.type !== 'sugar' || !Array.isArray(obj.data)) throw new Error('格式错误');
+      const existing = loadData(LS_SUGAR);
+      const existingIds = new Set(existing.map(d => d.id));
+      const newRecords = obj.data.filter(d => !existingIds.has(d.id));
+      const merged = [...existing, ...newRecords];
+      merged.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+      saveData(LS_SUGAR, merged);
+      showToast(`✅ 导入成功：新增 ${newRecords.length} 条，跳过重复 ${obj.data.length - newRecords.length} 条`);
+      sugarRenderAll();
+    } catch (err) {
+      showToast('❌ 导入失败：文件格式不正确');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+$('sugar-export-csv').addEventListener('click', () => {
   const data = loadData(LS_SUGAR);
   if (!data.length) { showToast('⚠️ 暂无数据可导出'); return; }
   const csv = '日期,时间,血糖值(mmol/L),时段,备注\n' + data.map(r =>
@@ -605,7 +647,42 @@ $('bp-clear').addEventListener('click', () => {
   bpRenderAll();
 });
 
-$('bp-export').addEventListener('click', () => {
+$('bp-export-json').addEventListener('click', () => {
+  const data = loadData(LS_BP);
+  if (!data.length) { showToast('⚠️ 暂无数据可导出'); return; }
+  const json = JSON.stringify({ type: 'bp', version: 1, exportedAt: new Date().toISOString(), data }, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `血压备份_${now().date}.json`; a.click();
+  showToast('📤 JSON 备份已下载');
+});
+
+$('bp-import-json').addEventListener('click', () => $('bp-import-file').click());
+$('bp-import-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const obj = JSON.parse(ev.target.result);
+      if (obj.type !== 'bp' || !Array.isArray(obj.data)) throw new Error('格式错误');
+      const existing = loadData(LS_BP);
+      const existingIds = new Set(existing.map(d => d.id));
+      const newRecords = obj.data.filter(d => !existingIds.has(d.id));
+      const merged = [...existing, ...newRecords];
+      merged.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+      saveData(LS_BP, merged);
+      showToast(`✅ 导入成功：新增 ${newRecords.length} 条，跳过重复 ${obj.data.length - newRecords.length} 条`);
+      bpRenderAll();
+    } catch (err) {
+      showToast('❌ 导入失败：文件格式不正确');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+$('bp-export-csv').addEventListener('click', () => {
   const data = loadData(LS_BP);
   if (!data.length) { showToast('⚠️ 暂无数据可导出'); return; }
   const csv = '日期,时间,收缩压(mmHg),舒张压(mmHg),脉搏(次/分),体位,备注\n' + data.map(r =>
