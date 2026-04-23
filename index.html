@@ -480,8 +480,8 @@ body::after {
 
 const CATEGORIES = [
   { key: 'all',    label: '全部',   icon: '🎯' },
-  { key: 'custom', label: '个人定制', icon: '🛠️' },
   { key: 'health', label: '健康管理', icon: '❤️' },
+  { key: 'custom', label: '个人定制', icon: '🛠️' },
   { key: 'board',  label: '桌游',     icon: '🎲' },
   { key: 'game',   label: '游戏',     icon: '🎮' },
   { key: 'ai',     label: 'AI 工具', icon: '🤖' },
@@ -493,15 +493,15 @@ const CATEGORIES = [
 ];
 
 const TOOLS = [
+  // ——— 健康管理 ———
+  { name: '血糖管理',     url: 'health.html#sugar',                icon: '🩸', desc: '血糖记录与趋势分析',  category: 'health' },
+  { name: '血压管理',     url: 'health.html#pressure',             icon: '💓', desc: '血压记录与趋势分析',  category: 'health' },
+
   // ——— 个人定制 ———
   { name: '我的博客',     url: 'https://luzhenhuan.github.io',     icon: '✍️', desc: '个人博客站点',       category: 'custom' },
   { name: 'ChatGPT 定制', url: 'https://chat.openai.com',          icon: '⚙️', desc: '自定义 GPT 助手',    category: 'custom' },
   { name: '书签收藏',     url: '#',                                icon: '🔖', desc: '常用书签与收藏夹',    category: 'custom' },
   { name: '在线工具箱',   url: 'https://tool.lu',                  icon: '🧰', desc: '多功能在线工具集',   category: 'custom' },
-
-  // ——— 健康管理 ———
-  { name: '血糖管理',     url: 'health.html#sugar',                icon: '🩸', desc: '血糖记录与趋势分析',  category: 'health' },
-  { name: '血压管理',     url: 'health.html#pressure',             icon: '💓', desc: '血压记录与趋势分析',  category: 'health' },
 
   // ——— 桌游 ———
   { name: '圣托里尼天神卡', url: 'santorini.html',              icon: '🏛️', desc: '天神卡能力速查模拟器', category: 'board' },
